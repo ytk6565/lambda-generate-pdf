@@ -1,4 +1,4 @@
-name: "Deploy app"
+name: "Deploy"
 
 on:
   push:
@@ -20,6 +20,16 @@ jobs:
       ENV: "production"
       ARTIFACT_NAME: "generate-pdf-app--production"
       AWS_LAMBDA_LAYERS_NAME: "generate-pdf-app"
+      AWS_LAMBDA_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  
+  call-deploy-fonts:
+    uses: ./.github/workflows/reusable-deploy-fonts.yml
+    with:
+      ENV: "production"
+      ARTIFACT_NAME: "generate-pdf-fonts--production"
+      AWS_LAMBDA_LAYERS_NAME: "generate-pdf-fonts"
       AWS_LAMBDA_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
