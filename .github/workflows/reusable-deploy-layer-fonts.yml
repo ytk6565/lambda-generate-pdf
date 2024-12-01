@@ -32,7 +32,6 @@ jobs:
           filters: |
             targets:
               - "packages/function/fonts/**"
-              - ".github/actions/upload-artifact/action.yml"
               - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
               - ".github/workflows/reusable-deploy-layer-fonts.yml"
               - ".github/workflows/reusable-publish-layer.yml"
@@ -52,6 +51,20 @@ jobs:
           artifact_name: ${{ inputs.artifact_name }}
           artifact_path: "packages/function/fonts/**"
           basepath: "fonts"
+
+      - name: "Prepare"
+        run: |
+          mkdir -p ./packages/function/dist/fonts
+          cp -r ./packages/function/fonts ./packages/function/dist
+
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ./packages/function/dist
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
 
   call-publish-layer-version:
     uses: ./.github/workflows/reusable-publish-layer.yml

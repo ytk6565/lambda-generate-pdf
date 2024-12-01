@@ -6,7 +6,7 @@ on:
       AWS_LAMBDA_FUNCTION_NAME:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_FUNCTION:
+      AWS_LAMBDA_LAYER_NAME_NODE_MODULES:
         type: string
         required: true
       AWS_LAMBDA_LAYER_NAME_FONTS:
@@ -64,7 +64,7 @@ jobs:
       ]
     with:
       AWS_LAMBDA_FUNCTION_NAME: ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
-      AWS_LAMBDA_LAYER_NAME_FUNCTION: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FUNCTION }}
+      AWS_LAMBDA_LAYER_NAME_NODE_MODULES: ${{ inputs.AWS_LAMBDA_LAYER_NAME_NODE_MODULES }}
       AWS_LAMBDA_LAYER_NAME_FONTS: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
       AWS_LAMBDA_LAYER_NAME_CHROMIUM: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}
       artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"

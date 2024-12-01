@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/reusable-deploy.yml
     with:
       AWS_LAMBDA_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
-      AWS_LAMBDA_LAYER_NAME_FUNCTION: "generate-pdf-function"
+      AWS_LAMBDA_LAYER_NAME_NODE_MODULES: "generate-pdf-node-modules"
       AWS_LAMBDA_LAYER_NAME_FONTS: "generate-pdf-fonts"
       AWS_LAMBDA_LAYER_NAME_CHROMIUM: "generate-pdf-chromium"
       env: "production"
