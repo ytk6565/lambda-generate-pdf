@@ -9,15 +9,28 @@ inputs:
   ARTIFACT_PATH:
     required: true
     type: string
+  INCLUDE_BASENAME:
+    required: false
+    type: boolean
+    default: false
 
 runs:
   using: "composite"
   steps:
+    - name: "Prepare"
+      run: |
+        BASENAME="/"
+        if [ -d ${{ inputs.INCLUDE_BASENAME }} ]; then
+          BASENAME="$(basename ${{ inputs.ARTIFACT_PATH }})/"
+        fi
+        mkdir -p ./artifact
+        cp -r ${{ inputs.ARTIFACT_PATH }} ./artifact/$BASENAME
+
     - name: "Upload artifact"
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.ARTIFACT_NAME }}
-        path: ${{ inputs.ARTIFACT_PATH }}
+        path: ./artifact
         if-no-files-found: error
         include-hidden-files: true
         retention-days: 1

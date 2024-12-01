@@ -45,6 +45,7 @@ jobs:
         with:
           ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
           ARTIFACT_PATH: "packages/app/.output"
+          INCLUDE_BASENAME: true
 
   call-deploy-lambda-layer:
     uses: ./.github/workflows/reusable-deploy-lambda-layer.yml
