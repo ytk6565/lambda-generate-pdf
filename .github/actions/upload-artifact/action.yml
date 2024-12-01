@@ -20,7 +20,7 @@ runs:
     - name: "Prepare artifact"
       shell: bash
       run: |
-        mkdir -p ./artifact
+        mkdir -p ./artifact/${{ inputs.basepath }}
         cp -r ${{ inputs.artifact_path }} ./artifact/${{ inputs.basepath }}
 
     - name: "Upload artifact"
