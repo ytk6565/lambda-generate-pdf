@@ -1,18 +1,14 @@
-name: "Deploy app"
+name: "Reusable deploy app"
 
 on:
-  push:
-    branches:
-      - "main"
-    paths:
-      - "packages/app/**"
-      - ".github/workflows/deploy-app.yml"
-      - ".github/actions/upload-artifact/action.yml"
-      - ".github/workflows/reusable-deploy-lambda-layer.yml"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_call:
+    inputs:
+      ENV:
+        type: string
+        required: true
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
 
 permissions:
   id-token: write
@@ -51,6 +47,7 @@ jobs:
     uses: ./.github/workflows/reusable-deploy-lambda-layer.yml
     needs: build-app
     with:
+      ENV: ${{ inputs.ENV }}
       LAYERS_NAME: "generate-pdf-app"
       ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
     secrets:

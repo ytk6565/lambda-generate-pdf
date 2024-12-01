@@ -1,0 +1,27 @@
+name: "Deploy app"
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "packages/app/**"
+      - ".github/workflows/cd-production.yml"
+      - ".github/actions/upload-artifact/action.yml"
+      - ".github/workflows/reusable-deploy-lambda-layer.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  call-deploy-app:
+    uses: ./.github/workflows/reusable-deploy-app.yml
+    with:
+      ENV: "production"
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

@@ -3,6 +3,9 @@ name: "Reusable deploy Lambda Layer"
 on:
   workflow_call:
     inputs:
+      ENV:
+        type: string
+        required: true
       ARTIFACT_NAME:
         type: string
         required: true
