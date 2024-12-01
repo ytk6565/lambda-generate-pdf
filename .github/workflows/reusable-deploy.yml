@@ -51,6 +51,7 @@ jobs:
     uses: ./.github/workflows/reusable-deploy-layer-chromium.yml
     with:
       AWS_LAMBDA_LAYERS_NAME: "generate-pdf-chromium"
+      AWS_LAMBDA_S3_BUCKET_NAME: "generate-pdf-layer"
       artifact_name: "generate-pdf-chromium--production"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

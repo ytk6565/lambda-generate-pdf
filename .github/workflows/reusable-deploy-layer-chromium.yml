@@ -6,6 +6,9 @@ on:
       AWS_LAMBDA_LAYERS_NAME:
         type: string
         required: true
+      AWS_LAMBDA_S3_BUCKET_NAME:
+        type: string
+        required: true
       artifact_name:
         type: string
         required: true
@@ -18,6 +21,7 @@ permissions:
   contents: read
 
 env:
+  AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
   CHROMIUM_VERSION: "112.0.0"
 
 jobs:
@@ -34,11 +38,9 @@ jobs:
         with:
           filters: |
             targets:
-              - "packages/function/chromium/**"
               - ".github/actions/upload-artifact/action.yml"
               - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
               - ".github/workflows/reusable-deploy-layer-chromium.yml"
-              - ".github/workflows/reusable-publish-layer.yml"
               - ".github/workflows/reusable-update-function-configuration.yml"
 
   build-chromium:
@@ -49,9 +51,23 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
 
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+
       - name: "Fetch Chromium"
         run: |
           wget "https://github.com/Sparticuz/chromium/releases/download/v${{ env.CHROMIUM_VERSION }}/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
+
+      - name: "Upload to S3"
+        run: |
+          aws s3 cp "chromium-v${chromiumVersion}-layer.zip" "s3://${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
+
+      - name: "Publish layer version"
+        run: |
+          aws lambda publish-layer-version --layer-name chromium --description "Chromium v${{ env.CHROMIUM_VERSION }}" --content "S3Bucket=${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }},S3Key=chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" --compatible-runtimes nodejs --compatible-architectures x86_64
 
       - name: "Upload artifact"
         uses: ./.github/actions/upload-artifact
@@ -59,12 +75,3 @@ jobs:
           artifact_name: ${{ inputs.artifact_name }}
           artifact_path: "chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
           include_basename: false
-
-  call-publish-layer-version:
-    uses: ./.github/workflows/reusable-publish-layer.yml
-    needs: build-chromium
-    with:
-      AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
-      artifact_name: ${{ inputs.artifact_name }}
-    secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
