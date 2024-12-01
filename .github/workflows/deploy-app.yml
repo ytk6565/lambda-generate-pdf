@@ -44,7 +44,7 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
-          ARTIFACT_PATH: "packages/app/.output/"
+          ARTIFACT_PATH: "packages/app/.output"
 
   call-deploy-lambda-layer:
     uses: ./.github/workflows/reusable-deploy-lambda-layer.yml

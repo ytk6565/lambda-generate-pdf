@@ -42,9 +42,8 @@ jobs:
           name: ${{ inputs.ARTIFACT_NAME }}
           path: ${{ env.DOWNLOAD_ARTIFACT_PATH }}
 
-      - name: "Check artifact exists"
+      - name: "Check artifact"
         run: |
-          ls -l
           ls -l ${{ env.DOWNLOAD_ARTIFACT_PATH }}
 
       - name: "Generate zip"
