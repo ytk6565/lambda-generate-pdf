@@ -74,7 +74,7 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name }}
-          artifact_path: "packages/function/dist"
+          artifact_path: "packages/function/dist/**"
           include_basename: false
 
   call-publish-layer:
