@@ -17,6 +17,7 @@ runs:
   steps:
     - name: "Get the latest version of app layer"
       id: get_layer_arn_suffix
+      shell: bash
       run: |
         LAYER_VERSION=$(aws lambda list-layer-versions \
           --layer-name ${{ inputs.AWS_LAMBDA_LAYER_NAME }} \
