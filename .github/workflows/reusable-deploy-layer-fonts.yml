@@ -1,18 +1,12 @@
-name: "Reusable deploy fonts"
+name: "Reusable deploy fonts Lambda Layer"
 
 on:
   workflow_call:
     inputs:
-      ENV:
-        type: string
-        required: true
-      ARTIFACT_NAME:
-        type: string
-        required: true
       AWS_LAMBDA_LAYERS_NAME:
         type: string
         required: true
-      AWS_LAMBDA_FUNCTION_NAME:
+      artifact_name:
         type: string
         required: true
     secrets:
@@ -40,7 +34,7 @@ jobs:
               - "packages/function/fonts/**"
               - ".github/workflows/reusable-deploy-fonts.yml"
               - ".github/actions/upload-artifact/action.yml"
-              - ".github/workflows/reusable-deploy-lambda-layer.yml"
+              - ".github/workflows/reusable-publish-layer.yml"
 
   build-fonts:
     needs: changes
@@ -53,17 +47,15 @@ jobs:
       - name: "Upload artifact"
         uses: ./.github/actions/upload-artifact
         with:
-          ARTIFACT_NAME: ${{ inputs.ARTIFACT_NAME }}
-          ARTIFACT_PATH: "packages/function/fonts"
-          INCLUDE_BASENAME: true
+          artifact_name: ${{ inputs.artifact_name }}
+          artifact_path: "packages/function/fonts"
+          include_basename: true
 
-  call-deploy-lambda-layer:
-    uses: ./.github/workflows/reusable-deploy-lambda-layer.yml
+  call-publish-layer-version:
+    uses: ./.github/workflows/reusable-publish-layer.yml
     needs: build-fonts
     with:
-      ENV: ${{ inputs.ENV }}
-      ARTIFACT_NAME: ${{ inputs.ARTIFACT_NAME }}
       AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
-      AWS_LAMBDA_FUNCTION_NAME: ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
+      artifact_name: ${{ inputs.artifact_name }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

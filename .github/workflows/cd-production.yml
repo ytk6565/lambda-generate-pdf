@@ -14,22 +14,14 @@ permissions:
   contents: read
 
 jobs:
-  call-deploy-app:
-    uses: ./.github/workflows/reusable-deploy-app.yml
+  call-deploy:
+    uses: ./.github/workflows/reusable-deploy.yml
     with:
-      ENV: "production"
-      ARTIFACT_NAME: "generate-pdf-app--production"
-      AWS_LAMBDA_LAYERS_NAME: "generate-pdf-app"
       AWS_LAMBDA_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
-    secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  
-  call-deploy-fonts:
-    uses: ./.github/workflows/reusable-deploy-fonts.yml
-    with:
-      ENV: "production"
-      ARTIFACT_NAME: "generate-pdf-fonts--production"
-      AWS_LAMBDA_LAYERS_NAME: "generate-pdf-fonts"
-      AWS_LAMBDA_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
+      AWS_LAMBDA_LAYER_NAME_APP: "generate-pdf-app"
+      AWS_LAMBDA_LAYER_NAME_FUNCTION: "generate-pdf-function"
+      AWS_LAMBDA_LAYER_NAME_FONTS: "generate-pdf-fonts"
+      AWS_LAMBDA_LAYER_NAME_CHROMIUM: "generate-pdf-chromium"
+      env: "production"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

@@ -1,0 +1,26 @@
+name: "Get Lambda Layer ARN suffix"
+
+description: "Get Lambda Layer ARN suffix"
+
+inputs:
+  AWS_LAMBDA_LAYER_NAME:
+    required: true
+    type: string
+
+outputs:
+  LAYER_ARN_SUFFIX:
+    description: "Lambda Layer ARN suffix"
+    value: ${{ steps.get_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Get the latest version of app layer"
+      id: get_layer_arn_suffix
+      run: |
+        LAYER_VERSION=$(aws lambda list-layer-versions \
+          --layer-name ${{ inputs.AWS_LAMBDA_LAYER_NAME }} \
+          --max-items 1 \
+          --query 'LayerVersions[0].Version' \
+          --output text)
+        echo "LAYER_ARN_SUFFIX=${{ inputs.AWS_LAMBDA_LAYER_NAME }}:${LAYER_VERSION}" >> $GITHUB_ENV

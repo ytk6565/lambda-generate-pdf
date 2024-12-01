@@ -3,13 +3,13 @@ name: "Upload artifact"
 description: "Upload artifact"
 
 inputs:
-  ARTIFACT_NAME:
+  artifact_name:
     required: true
     type: string
-  ARTIFACT_PATH:
+  artifact_path:
     required: true
     type: string
-  INCLUDE_BASENAME:
+  include_basename:
     required: false
     type: boolean
     default: false
@@ -21,16 +21,16 @@ runs:
       shell: bash
       run: |
         BASENAME="/"
-        if [ -d ${{ inputs.INCLUDE_BASENAME }} ]; then
-          BASENAME="$(basename ${{ inputs.ARTIFACT_PATH }})/"
+        if [ -d ${{ inputs.include_basename }} ]; then
+          BASENAME="$(basename ${{ inputs.artifact_path }})/"
         fi
         mkdir -p ./artifact
-        cp -r ${{ inputs.ARTIFACT_PATH }} ./artifact/$BASENAME
+        cp -r ${{ inputs.artifact_path }} ./artifact/$BASENAME
 
     - name: "Upload artifact"
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.ARTIFACT_NAME }}
+        name: ${{ inputs.artifact_name }}
         path: ./artifact
         if-no-files-found: error
         include-hidden-files: true
