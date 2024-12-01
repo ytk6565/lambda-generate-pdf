@@ -24,6 +24,7 @@ permissions:
   contents: read
 
 env:
+  AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
   zip_file_name: "Layer.zip"
 
 jobs:
@@ -55,6 +56,12 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
 
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+
       - name: "Setup Node.js"
         uses: actions/setup-node@v4
         with:
@@ -71,7 +78,7 @@ jobs:
         with:
           artifact_name: ${{ inputs.artifact_name }}
           artifact_path: "packages/function/node_modules"
-          include_basename: false
+          include_basename: true
 
       - name: "Generate zip"
         run: zip -r ${{ env.zip_file_name }} packages/function/index.mjs packages/function/src
@@ -80,8 +87,7 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
-            --zip-file fileb://${{ env.zip_file_name }} \
-            --region ap-northeast-1
+            --zip-file fileb://${{ env.zip_file_name }}
 
   call-publish-layer:
     uses: ./.github/workflows/reusable-publish-layer.yml
