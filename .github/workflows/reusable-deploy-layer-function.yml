@@ -3,6 +3,9 @@ name: "Reusable deploy function Lambda Layer"
 on:
   workflow_call:
     inputs:
+      AWS_LAMBDA_FUNCTION_NAME:
+        type: string
+        required: true
       AWS_LAMBDA_LAYERS_NAME:
         type: string
         required: true
@@ -19,6 +22,9 @@ on:
 permissions:
   id-token: write
   contents: read
+
+env:
+  zip_file_name: "Layer.zip"
 
 jobs:
   changes:
@@ -60,22 +66,21 @@ jobs:
         run: npm ci --only=prod
         working-directory: "packages/function"
 
-      - name: "Prepare output"
-        run: |
-          mkdir -p packages/function/dist
-          mkdir packages/function/dist/src
-          mkdir packages/function/dist/node_modules
-          cp packages/function/index.mjs packages/function/dist
-          cp -r packages/function/src packages/function/dist/src
-          cp -r packages/function/node_modules packages/function/dist/node_modules
-        working-directory: "."
-
       - name: "Upload artifact"
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name }}
-          artifact_path: "packages/function/dist/**"
+          artifact_path: "packages/function/node_modules"
           include_basename: false
+
+      - name: "Generate zip"
+        run: zip -r ${{ env.zip_file_name }} packages/function/index.mjs packages/function/src
+
+      - name: "Update function code"
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ inputs.AWS_LAMBDA_LAYERS_NAME }} \
+            --zip-file fileb://${{ env.zip_file_name }}
 
   call-publish-layer:
     uses: ./.github/workflows/reusable-publish-layer.yml
