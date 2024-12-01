@@ -82,27 +82,27 @@ jobs:
         run: npm ci --only=prod
         working-directory: "packages/function"
 
+      - name: "Upload artifact node_modules"
+        uses: ./.github/actions/upload-artifact
+        with:
+          artifact_name: ${{ inputs.artifact_name_node_modules }}
+          artifact_path: "packages/function/node_modules/"
+          basepath: "nodejs"
+
       - name: "Prepare function code"
         run: |
           mkdir -p packages/function/dist
           mkdir packages/function/dist/src
           mkdir packages/function/dist/.output
           cp -r packages/function/index.mjs packages/function/dist
-          cp -r packages/function/src/ packages/function/dist/src
-          cp -r packages/app/.output/ packages/function/dist/.output
+          cp -r packages/function/src/ packages/function/dist
+          cp -r packages/app/.output/ packages/function/dist
 
       - name: "Upload artifact function code"
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name_function_code }}
           artifact_path: "packages/function/dist"
-
-      - name: "Upload artifact node_modules"
-        uses: ./.github/actions/upload-artifact
-        with:
-          artifact_name: ${{ inputs.artifact_name_node_modules }}
-          artifact_path: "packages/function/node_modules/"
-          basepath: "nodejs/node_modules"
 
   call-publish-layer:
     uses: ./.github/workflows/reusable-publish-layer.yml
