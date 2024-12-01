@@ -10,6 +10,10 @@ on:
       - ".github/actions/upload-artifact/action.yml"
       - ".github/workflows/reusable-deploy-lambda-layer.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   id-token: write
   contents: read
