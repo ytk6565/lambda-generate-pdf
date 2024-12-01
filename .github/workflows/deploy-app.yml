@@ -45,7 +45,7 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
-          ARTIFACT_PATH: "./packages/app/Layer.zip"
+          ARTIFACT_PATH: "./packages/app/.output/"
 
   call-deploy-lambda-layer:
     uses: ./.github/workflows/reusable-deploy-lambda-layer.yml
@@ -53,6 +53,5 @@ jobs:
     with:
       LAYERS_NAME: "generate-pdf-app"
       ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
-      ARTIFACT_PATH: "./Layer.zip"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

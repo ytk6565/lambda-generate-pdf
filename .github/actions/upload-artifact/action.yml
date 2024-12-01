@@ -7,9 +7,8 @@ inputs:
     required: true
     type: string
   ARTIFACT_PATH:
-    required: false
+    required: true
     type: string
-    default: "./Layer.zip"
 
 runs:
   using: "composite"
