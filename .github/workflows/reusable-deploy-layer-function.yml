@@ -101,8 +101,8 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name_node_modules }}
-          artifact_path: "packages/function/node_modules"
-          basepath: "nodejs/node_modules/"
+          artifact_path: "packages/function/node_modules/"
+          basepath: "nodejs/node_modules"
 
   call-publish-layer:
     uses: ./.github/workflows/reusable-publish-layer.yml
