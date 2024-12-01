@@ -3,16 +3,16 @@ name: "Reusable deploy function Lambda Layer"
 on:
   workflow_call:
     inputs:
-      AWS_LAMBDA_FUNCTION_NAME:
-        type: string
-        required: true
       AWS_LAMBDA_LAYERS_NAME:
         type: string
         required: true
       env:
         type: string
         required: true
-      artifact_name:
+      artifact_name_function_code:
+        type: string
+        required: true
+      artifact_name_node_modules:
         type: string
         required: true
     secrets:
@@ -24,7 +24,6 @@ permissions:
   contents: read
 
 env:
-  AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
   zip_file_name: "Layer.zip"
 
 jobs:
@@ -73,27 +72,29 @@ jobs:
         run: npm ci --only=prod
         working-directory: "packages/function"
 
-      - name: "Upload artifact"
+      - name: "Upload artifact node_modules"
         uses: ./.github/actions/upload-artifact
         with:
-          artifact_name: ${{ inputs.artifact_name }}
+          artifact_name: ${{ inputs.artifact_name_node_modules }}
           artifact_path: "packages/function/node_modules"
           include_basename: true
 
       - name: "Generate zip"
-        run: zip -r ${{ env.zip_file_name }} packages/function/index.mjs packages/function/src
+        run: zip -r ${{ env.zip_file_name }} index.mjs src
+        working-directory: "packages/function"
 
-      - name: "Update function code"
-        run: |
-          aws lambda update-function-code \
-            --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
-            --zip-file fileb://${{ env.zip_file_name }}
+      - name: "Upload artifact function code"
+        uses: ./.github/actions/upload-artifact
+        with:
+          artifact_name: ${{ inputs.artifact_name_node_modules }}
+          artifact_path: "packages/function/${{ env.zip_file_name }}"
+          include_basename: false
 
   call-publish-layer:
     uses: ./.github/workflows/reusable-publish-layer.yml
     needs: build-function
     with:
       AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
-      artifact_name: ${{ inputs.artifact_name }}
+      artifact_name: ${{ inputs.artifact_name_node_modules }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

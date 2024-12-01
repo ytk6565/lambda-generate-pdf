@@ -18,6 +18,9 @@ on:
       AWS_LAMBDA_LAYER_NAME_CHROMIUM:
         type: string
         required: true
+      artifact_name_function_code:
+        type: string
+        required: true
     secrets:
       AWS_ACCOUNT_ID:
         required: true
@@ -25,6 +28,8 @@ on:
 env:
   AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
   LAYER_ARN_PREFIX: "arn:aws:lambda:ap-northeast-1:${{ secrets.AWS_ACCOUNT_ID }}:layer"
+  download_artifact_path: "artifacts"
+  zip_file_name: "Function.zip"
 
 permissions:
   id-token: write
@@ -76,3 +81,24 @@ jobs:
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.function_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.chromium_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}
+
+      - name: "Download a single artifact"
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name_function_code }}
+          path: ${{ env.download_artifact_path }}
+
+      - name: "Check artifact"
+        run: |
+          ls -la ${{ env.download_artifact_path }}
+
+      - name: "Generate zip"
+        run: |
+          cd ${{ env.download_artifact_path }}
+          zip -r ../${{ env.zip_file_name }} ./
+
+      - name: "Update Lambda function code"
+        run: |
+          aws lambda update-function-code \
+          --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
+          --zip-file fileb://${{ env.zip_file_name }}

@@ -49,7 +49,6 @@ jobs:
         run: |
           cd ${{ env.download_artifact_path }}
           zip -r ../${{ env.zip_file_name }} ./
-          zip -r ../${{ env.zip_file_name }} ./
 
       - name: "Publish new layer version"
         id: publish_layer

@@ -35,17 +35,17 @@ jobs:
     with:
       AWS_LAMBDA_LAYERS_NAME: "generate-pdf-app"
       env:
-      artifact_name: "generate-pdf-app--production"
+      artifact_name: "generate-pdf-app--${{ inputs.env }}"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
   call-deploy-layer-function:
     uses: ./.github/workflows/reusable-deploy-layer-function.yml
     with:
-      AWS_LAMBDA_FUNCTION_NAME: ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
       AWS_LAMBDA_LAYERS_NAME: "generate-pdf-function"
       env:
-      artifact_name: "generate-pdf-function--production"
+      artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
+      artifact_name_node_modules: "generate-pdf-node-modules--${{ inputs.env }}"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
@@ -53,7 +53,7 @@ jobs:
     uses: ./.github/workflows/reusable-deploy-layer-fonts.yml
     with:
       AWS_LAMBDA_LAYERS_NAME: "generate-pdf-fonts"
-      artifact_name: "generate-pdf-fonts--production"
+      artifact_name: "generate-pdf-fonts--${{ inputs.env }}"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
@@ -62,7 +62,7 @@ jobs:
     with:
       AWS_LAMBDA_LAYERS_NAME: "generate-pdf-chromium"
       AWS_LAMBDA_S3_BUCKET_NAME: "generate-pdf-layer"
-      artifact_name: "generate-pdf-chromium--production"
+      artifact_name: "generate-pdf-chromium--${{ inputs.env }}"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
@@ -81,5 +81,6 @@ jobs:
       AWS_LAMBDA_LAYER_NAME_FUNCTION: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FUNCTION }}
       AWS_LAMBDA_LAYER_NAME_FONTS: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
       AWS_LAMBDA_LAYER_NAME_CHROMIUM: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}
+      artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
