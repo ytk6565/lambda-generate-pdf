@@ -1,0 +1,31 @@
+name: "Download artifact and to zip"
+
+description: "Download artifact and to zip"
+
+inputs:
+  artifact_name:
+    required: true
+    type: string
+  zip_file_name:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Download a single artifact"
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: ./artifacts
+
+    - name: "Check artifact"
+      shell: bash
+      run: |
+        ls -la ./artifacts
+
+    - name: "Generate zip"
+      shell: bash
+      run: |
+        cd ./artifacts
+        zip -r ../${{ inputs.zip_file_name }} ./

@@ -80,7 +80,7 @@ jobs:
       - name: "Upload artifact function code"
         uses: ./.github/actions/upload-artifact
         with:
-          artifact_name: ${{ inputs.artifact_name_node_modules }}
+          artifact_name: ${{ inputs.artifact_name_function_code }}
           artifact_path: "packages/function/${{ env.zip_file_name }}"
           include_basename: false
 

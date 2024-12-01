@@ -82,20 +82,11 @@ jobs:
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.chromium_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}
 
-      - name: "Download a single artifact"
-        uses: actions/download-artifact@v4
+      - name: "Download artifact and to zip"
+        uses: ./.github/actions/download-artifact-and-to-zip
         with:
-          name: ${{ inputs.artifact_name_function_code }}
-          path: ${{ env.download_artifact_path }}
-
-      - name: "Check artifact"
-        run: |
-          ls -la ${{ env.download_artifact_path }}
-
-      - name: "Generate zip"
-        run: |
-          cd ${{ env.download_artifact_path }}
-          zip -r ../${{ env.zip_file_name }} ./
+          artifact_name: ${{ inputs.artifact_name_function_code }}
+          zip_file_name: ${{ env.zip_file_name }}
 
       - name: "Update Lambda function code"
         run: |

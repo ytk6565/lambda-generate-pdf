@@ -35,20 +35,11 @@ jobs:
           aws-region: ap-northeast-1
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
 
-      - name: "Download a single artifact"
-        uses: actions/download-artifact@v4
+      - name: "Download artifact and to zip"
+        uses: ./.github/actions/download-artifact-and-to-zip
         with:
-          name: ${{ inputs.artifact_name }}
-          path: ${{ env.download_artifact_path }}
-
-      - name: "Check artifact"
-        run: |
-          ls -la ${{ env.download_artifact_path }}
-
-      - name: "Generate zip"
-        run: |
-          cd ${{ env.download_artifact_path }}
-          zip -r ../${{ env.zip_file_name }} ./
+          artifact_name: ${{ inputs.artifact_name }}
+          zip_file_name: ${{ env.zip_file_name }}
 
       - name: "Publish new layer version"
         id: publish_layer
