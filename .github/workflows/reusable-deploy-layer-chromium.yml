@@ -22,7 +22,7 @@ permissions:
 
 env:
   AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
-  CHROMIUM_VERSION: "112.0.0"
+  CHROMIUM_VERSION: "116.0.5793.0"
 
 jobs:
   changes:
