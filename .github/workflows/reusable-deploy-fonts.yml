@@ -5,7 +5,8 @@ on:
     inputs:
       ENV:
         type: string
-        required: true
+        required: false
+        default: "production"
       ARTIFACT_NAME:
         type: string
         required: true
