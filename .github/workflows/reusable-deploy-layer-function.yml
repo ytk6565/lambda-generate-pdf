@@ -74,14 +74,14 @@ jobs:
           include_basename: true
 
       - name: "Generate zip"
-        run: zip -r ${{ env.zip_file_name }} index.mjs src
+        run: zip -r ../../${{ env.zip_file_name }} index.mjs src
         working-directory: "packages/function"
 
       - name: "Upload artifact function code"
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name_function_code }}
-          artifact_path: "packages/function/${{ env.zip_file_name }}"
+          artifact_path: ${{ env.zip_file_name }}
           include_basename: false
 
   call-publish-layer:
