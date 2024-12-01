@@ -46,4 +46,6 @@ jobs:
         run: |
           aws lambda publish-layer-version \
             --layer-name ${{ inputs.AWS_LAMBDA_LAYERS_NAME }} \
-            --zip-file fileb://${{ env.zip_file_name }}
+            --zip-file fileb://${{ env.zip_file_name }} \
+            --compatible-runtimes nodejs \
+            --compatible-architectures x86_64
