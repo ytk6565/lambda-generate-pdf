@@ -18,4 +18,5 @@ runs:
       with:
         name: ${{ inputs.ARTIFACT_NAME }}
         path: ${{ inputs.ARTIFACT_PATH }}
+        if-no-files-found: error
         retention-days: 1
