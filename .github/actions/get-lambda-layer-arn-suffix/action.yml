@@ -22,6 +22,7 @@ runs:
         LAYER_VERSION=$(aws lambda list-layer-versions \
           --layer-name ${{ inputs.AWS_LAMBDA_LAYER_NAME }} \
           --max-items 1 \
+          --no-paginate \
           --query 'LayerVersions[0].Version' \
           --output text)
         echo "LAYER_ARN_SUFFIX=${{ inputs.AWS_LAMBDA_LAYER_NAME }}:${LAYER_VERSION}" >> $GITHUB_ENV
