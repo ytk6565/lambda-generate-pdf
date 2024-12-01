@@ -63,7 +63,7 @@ jobs:
 
       - name: "Upload to S3"
         run: |
-          aws s3 cp "chromium-v${chromiumVersion}-layer.zip" "s3://${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
+          aws s3 cp "chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" "s3://${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
 
       - name: "Publish layer version"
         run: |
