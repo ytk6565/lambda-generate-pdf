@@ -1,0 +1,66 @@
+name: "Reusable deploy fonts"
+
+on:
+  workflow_call:
+    inputs:
+      ENV:
+        type: string
+        required: true
+      ARTIFACT_NAME:
+        type: string
+        required: true
+      AWS_LAMBDA_LAYERS_NAME:
+        type: string
+        required: true
+      AWS_LAMBDA_FUNCTION_NAME:
+        type: string
+        required: true
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.filter.outputs.targets }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            targets:
+              - "packages/function/fonts/**"
+              - ".github/workflows/reusable-deploy-fonts.yml"
+              - ".github/actions/upload-artifact/action.yml"
+              - ".github/workflows/reusable-deploy-lambda-layer.yml"
+
+  build-fonts:
+    needs: changes
+    if: ${{ needs.changes.outputs.exists == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Upload artifact"
+        uses: ./.github/actions/upload-artifact
+        with:
+          ARTIFACT_NAME: ${{ inputs.ARTIFACT_NAME }}
+          ARTIFACT_PATH: "packages/function/fonts"
+          INCLUDE_BASENAME: true
+
+  call-deploy-lambda-layer:
+    uses: ./.github/workflows/reusable-deploy-lambda-layer.yml
+    needs: build-fonts
+    with:
+      ENV: ${{ inputs.ENV }}
+      ARTIFACT_NAME: ${{ inputs.ARTIFACT_NAME }}
+      AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
+      AWS_LAMBDA_FUNCTION_NAME: ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

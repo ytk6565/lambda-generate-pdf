@@ -1,0 +1,42 @@
+name: "Deploy fonts"
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "packages/function/fonts/**"
+      - ".github/workflows/deploy-fonts.yml"
+      - ".github/actions/upload-artifact/action.yml"
+      - ".github/workflows/reusable-deploy-lambda-layer.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Upload artifact"
+        uses: ./.github/actions/upload-artifact
+        with:
+          ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
+          ARTIFACT_PATH: "packages/function/fonts"
+          INCLUDE_BASENAME: true
+
+  call-deploy-lambda-layer:
+    uses: ./.github/workflows/reusable-deploy-lambda-layer.yml
+    needs: build-app
+    with:
+      LAYERS_NAME: "generate-pdf-app"
+      ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
