@@ -1,11 +1,12 @@
+import type { ChildProcess } from "child_process";
 import { exec } from "child_process";
 
-const createServer = (endpoint) => {
-  let cp;
+const createServer = (endpoint: string) => {
+  let cp: ChildProcess | null = null;
 
   const stop = () => {
-    cp.stdin.write("stop\n");
-    cp.kill();
+    cp?.stdin?.write("stop\n");
+    cp?.kill();
   };
 
   process.on("SIGINT", stop);

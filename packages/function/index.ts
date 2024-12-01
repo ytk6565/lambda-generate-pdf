@@ -1,14 +1,20 @@
-"use strict";
+import type {
+  Context,
+  APIGatewayProxyResult,
+  APIGatewayEvent,
+} from "aws-lambda";
 
 import { S3Client } from "@aws-sdk/client-s3";
-import { createServer } from "./src/createServer.mjs";
-import { generatePdf } from "./src/generatePdf.mjs";
-import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3.mjs";
+import { createServer } from "./src/createServer";
+import { generatePdf } from "./src/generatePdf";
+import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
+
+type Callback = (error: Error | null, result: APIGatewayProxyResult) => void;
 
 const BUCKET = "generate-pdf-documents";
 const s3 = new S3Client({ region: "ap-northeast-1" });
 
-const errorResponse = (errorMessage) => {
+const errorResponse = (errorMessage: string) => {
   console.error(errorMessage);
   return {
     statusCode: 500,
@@ -16,7 +22,11 @@ const errorResponse = (errorMessage) => {
   };
 };
 
-export const handler = async (_event, _context, callback) => {
+export const handler = async (
+  _event: APIGatewayEvent,
+  _context: Context,
+  callback: Callback
+) => {
   try {
     const server = createServer(".output/server/index.mjs");
 
@@ -52,6 +62,7 @@ export const handler = async (_event, _context, callback) => {
   }
 };
 
+// @ts-ignore
 handler({}, {}, (_error, result) => {
   console.log(result);
 });

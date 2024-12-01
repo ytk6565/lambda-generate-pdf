@@ -10,6 +10,11 @@ inputs:
     required: true
     type: string
 
+outputs:
+  exists:
+    description: "Whether the specified files exist"
+    value: ${{ steps.filter.outputs.targets }}
+
 runs:
   using: "composite"
   steps:

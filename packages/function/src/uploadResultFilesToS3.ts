@@ -1,7 +1,12 @@
+import type { S3Client } from "@aws-sdk/client-s3";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 
-export const uploadResultFilesToS3 = async (s3, bucketName, pdfBuffer) => {
+export const uploadResultFilesToS3 = async (
+  s3: S3Client,
+  bucketName: string,
+  pdfBuffer: Buffer | undefined
+) => {
   if (!pdfBuffer) {
     throw new Error("PDF buffer is null or undefined");
   }

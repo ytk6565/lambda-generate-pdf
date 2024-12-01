@@ -95,13 +95,13 @@ jobs:
           include-hidden-files: true
           retention-days: 1
 
+      - name: "Build function"
+        run: npm run build
+        working-directory: "packages/function"
+
       - name: "Prepare function code"
         run: |
-          mkdir -p packages/function/dist
-          mkdir packages/function/dist/src
           mkdir packages/function/dist/.output
-          cp -r packages/function/index.mjs packages/function/dist
-          cp -r packages/function/src/ packages/function/dist
           cp -r packages/app/.output/ packages/function/dist
 
       - name: "Upload artifact for function code"
