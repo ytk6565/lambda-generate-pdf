@@ -84,14 +84,14 @@ jobs:
 
       - name: "Prepare node_modules"
         run: |
-          mkdir -p ./packages/function/nodejs
-          cp -r ./packages/function/node_modules ./packages/function/nodejs
+          mkdir -p ./packages/function/dependencies/nodejs
+          cp -r ./packages/function/node_modules ./packages/function/dependencies/nodejs
 
       - name: "Upload artifact"
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact_name_node_modules }}
-          path: ./packages/function/nodejs
+          path: ./packages/function/dependencies
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 1
