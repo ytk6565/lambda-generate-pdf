@@ -77,7 +77,15 @@ jobs:
           cache: "npm"
           cache-dependency-path: "packages/function/package-lock.json"
 
-      - name: "Install dependencies for function"
+      - name: "Install dependencies for function build"
+        run: npm ci
+        working-directory: "packages/function"
+
+      - name: "Build function"
+        run: npm run build
+        working-directory: "packages/function"
+
+      - name: "Install dependencies for deploy"
         run: npm ci --only=prod
         working-directory: "packages/function"
 
@@ -94,10 +102,6 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 1
-
-      - name: "Build function"
-        run: npm run build
-        working-directory: "packages/function"
 
       - name: "Prepare function code"
         run: |
