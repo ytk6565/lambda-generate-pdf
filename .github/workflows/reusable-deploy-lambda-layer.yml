@@ -44,7 +44,7 @@ jobs:
 
       - name: "Check artifact"
         run: |
-          ls -l ${{ env.DOWNLOAD_ARTIFACT_PATH }}
+          ls -la ${{ env.DOWNLOAD_ARTIFACT_PATH }}
 
       - name: "Generate zip"
         run: |
