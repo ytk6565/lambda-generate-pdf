@@ -19,4 +19,4 @@ runs:
       with:
         name: ${{ inputs.ARTIFACT_NAME }}
         path: ${{ inputs.ARTIFACT_PATH }}
-      retention-days: 1
+        retention-days: 1
