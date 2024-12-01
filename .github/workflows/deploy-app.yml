@@ -1,0 +1,54 @@
+name: "Deploy app"
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "packages/app/**"
+
+# permissions:
+#   id-token: write
+#   contents: read
+
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.16.1"
+          cache: "npm"
+
+      - name: "Install dependencies app"
+        run: npm ci --only=prod
+        working-directory: ./packages/app
+
+      - name: "Build app"
+        run: npm run build
+        working-directory: ./packages/app
+
+      - name: "Generate Layer.zip"
+        run: |
+          zip -r Layer.zip .output/
+        working-directory: ./packages/app
+
+      - name: "Upload artifact"
+        uses: ./.github/actions/upload-artifact
+        with:
+          ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
+          ARTIFACT_PATH: "./packages/app/Layer.zip"
+
+  call-deploy-lambda-layer:
+    uses: ./.github/workflows/reusable-deploy-lambda-layer.yml
+    needs: build-app
+    with:
+      LAYERS_NAME: "generate-pdf-app"
+      ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
+      ARTIFACT_PATH: "./packages/app/Layer.zip"
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

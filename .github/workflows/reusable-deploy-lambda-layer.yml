@@ -1,0 +1,60 @@
+name: "Reusable deploy Lambda Layer"
+
+on:
+  workflow_call:
+    inputs:
+      ARTIFACT_NAME:
+        type: string
+        required: true
+      ARTIFACT_PATH:
+        type: string
+        required: false
+        default: "./Layer.zip"
+      LAYERS_NAME:
+        type: string
+        required: true
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
+
+env:
+  AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
+  LAYERS_ARN: "arn:aws:lambda:ap-northeast-1:${{ secrets.AWS_ACCOUNT_ID }}:layer"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  aws-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+
+      - name: "Download a single artifact"
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.ARTIFACT_NAME }}
+
+      - name: "Publish new layer version"
+        id: publish_layer
+        run: |
+          LAYER_VERSION=$(aws lambda publish-layer-version \
+            --layer-name ${{ inputs.LAYERS_NAME }} \
+            --zip-file fileb://${{ inputs.ARTIFACT_PATH }} \
+            --query 'Version' \
+            --output text)
+          echo "LAYER_VERSION=${LAYER_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: "Update Lambda function configuration"
+        run: |
+          aws lambda update-function-configuration \
+          --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }} \
+          --layers ${{ env.LAYERS_ARN }}:${{ inputs.LAYERS_NAME }}:${{ steps.publish_layer.outputs.LAYER_VERSION }}

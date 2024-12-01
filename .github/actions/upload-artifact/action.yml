@@ -1,0 +1,22 @@
+name: "Upload artifact"
+
+description: "Upload artifact"
+
+inputs:
+  ARTIFACT_NAME:
+    required: true
+    type: string
+  ARTIFACT_PATH:
+    required: false
+    type: string
+    default: "./Layer.zip"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Upload artifact"
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.ARTIFACT_NAME }}
+        path: ${{ inputs.ARTIFACT_PATH }}
+      retention-days: 1
