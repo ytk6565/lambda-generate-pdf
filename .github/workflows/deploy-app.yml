@@ -53,6 +53,6 @@ jobs:
     with:
       LAYERS_NAME: "generate-pdf-app"
       ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
-      ARTIFACT_PATH: "./packages/app/Layer.zip"
+      ARTIFACT_PATH: "./Layer.zip"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
