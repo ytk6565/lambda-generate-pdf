@@ -38,7 +38,7 @@ jobs:
     uses: ./.github/workflows/reusable-deploy-layer-app.yml
     with:
       AWS_LAMBDA_LAYERS_NAME: "generate-pdf-app"
-      env: 
+      env:
       artifact_name: "generate-pdf-app--production"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -53,6 +53,7 @@ jobs:
 
   call-update-function-configuration:
     uses: ./.github/workflows/reusable-update-function-configuration.yml
+    needs: [call-deploy-layer-app, call-deploy-layer-fonts]
     with:
       AWS_LAMBDA_FUNCTION_NAME: ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
       AWS_LAMBDA_LAYER_NAME_APP: ${{ inputs.AWS_LAMBDA_LAYER_NAME_APP }}
