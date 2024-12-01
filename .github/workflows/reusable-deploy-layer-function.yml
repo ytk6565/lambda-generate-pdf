@@ -88,8 +88,8 @@ jobs:
           mkdir packages/function/dist/src
           mkdir packages/function/dist/.output
           cp -r packages/function/index.mjs packages/function/dist
-          cp -r packages/function/src/* packages/function/dist/src
-          cp -r packages/app/.output/* packages/function/dist/.output
+          cp -r packages/function/src/** packages/function/dist/src
+          cp -r packages/app/.output/** packages/function/dist/.output
 
       - name: "Upload artifact function code"
         uses: ./.github/actions/upload-artifact
