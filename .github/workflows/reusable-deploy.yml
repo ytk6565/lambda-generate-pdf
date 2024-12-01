@@ -39,6 +39,15 @@ jobs:
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
+  call-deploy-layer-function:
+    uses: ./.github/workflows/reusable-deploy-layer-function.yml
+    with:
+      AWS_LAMBDA_LAYERS_NAME: "generate-pdf-function"
+      env:
+      artifact_name: "generate-pdf-function--production"
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
   call-deploy-layer-fonts:
     uses: ./.github/workflows/reusable-deploy-layer-fonts.yml
     with:
@@ -61,6 +70,7 @@ jobs:
     needs:
       [
         call-deploy-layer-app,
+        call-deploy-layer-function,
         call-deploy-layer-fonts,
         call-deploy-layer-chromium,
       ]
