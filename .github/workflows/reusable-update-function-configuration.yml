@@ -72,16 +72,6 @@ jobs:
         with:
           AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}
 
-      - name: "Update Lambda function configuration"
-        run: |
-          aws lambda update-function-configuration \
-          --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
-          --layers \
-          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.app_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
-          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.function_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
-          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
-          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.chromium_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}
-
       - name: "Download artifact and to zip"
         uses: ./.github/actions/download-artifact-and-to-zip
         with:
@@ -93,3 +83,13 @@ jobs:
           aws lambda update-function-code \
           --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
           --zip-file fileb://${{ env.zip_file_name }}
+
+      - name: "Update Lambda function configuration"
+        run: |
+          aws lambda update-function-configuration \
+          --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
+          --layers \
+          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.app_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
+          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.function_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
+          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
+          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.chromium_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}
