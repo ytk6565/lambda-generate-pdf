@@ -88,20 +88,20 @@ jobs:
           mkdir packages/function/dist/src
           mkdir packages/function/dist/.output
           cp -r packages/function/index.mjs packages/function/dist
-          cp -r packages/function/src/** packages/function/dist/src
-          cp -r packages/app/.output/** packages/function/dist/.output
+          cp -r packages/function/src/ packages/function/dist/src
+          cp -r packages/app/.output/ packages/function/dist/.output
 
       - name: "Upload artifact function code"
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name_function_code }}
-          artifact_path: "packages/function/dist/**"
+          artifact_path: "packages/function/dist"
 
       - name: "Upload artifact node_modules"
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name_node_modules }}
-          artifact_path: "packages/function/node_modules/**"
+          artifact_path: "packages/function/node_modules"
           basepath: "nodejs/node_modules/"
 
   call-publish-layer:
