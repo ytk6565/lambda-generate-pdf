@@ -69,6 +69,7 @@ jobs:
       - name: "Prepare function code"
         run: |
           mkdir -p packages/function/dist
+          mkdir packages/function/dist/src
           cp -r packages/function/index.mjs packages/function/dist
           cp -r packages/function/src/* packages/function/dist/src
 
