@@ -19,4 +19,5 @@ runs:
         name: ${{ inputs.ARTIFACT_NAME }}
         path: ${{ inputs.ARTIFACT_PATH }}
         if-no-files-found: error
+        include-hidden-files: true
         retention-days: 1
