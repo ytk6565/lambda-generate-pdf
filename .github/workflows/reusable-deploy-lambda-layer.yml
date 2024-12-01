@@ -16,7 +16,7 @@ on:
 env:
   AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
   LAYERS_ARN: "arn:aws:lambda:ap-northeast-1:${{ secrets.AWS_ACCOUNT_ID }}:layer"
-  DOWNLOAD_ARTIFACT_PATH: "artifacts"
+  DOWNLOAD_ARTIFACT_PATH: "./artifacts"
   LAYER_ZIP_FILE_NAME: "Layer.zip"
 
 permissions:
