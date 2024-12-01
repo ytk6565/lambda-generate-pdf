@@ -49,7 +49,8 @@ jobs:
       - name: "Generate zip"
         run: |
           cd ${{ env.DOWNLOAD_ARTIFACT_PATH }}
-          zip -r ${{ env.LAYER_ZIP_FILE_NAME }} ./
+          zip -r ../${{ env.LAYER_ZIP_FILE_NAME }} ./
+          zip -r ../${{ env.LAYER_ZIP_FILE_NAME }} ./
 
       - name: "Publish new layer version"
         id: publish_layer
