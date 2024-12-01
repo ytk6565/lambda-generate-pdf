@@ -35,9 +35,11 @@ jobs:
           filters: |
             targets:
               - "packages/app/**"
-              - ".github/workflows/reusable-deploy-app.yml"
               - ".github/actions/upload-artifact/action.yml"
+              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
+              - ".github/workflows/reusable-deploy-layer-app.yml"
               - ".github/workflows/reusable-publish-layer.yml"
+              - ".github/workflows/reusable-update-function-configuration.yml"
 
   build-app:
     needs: changes
