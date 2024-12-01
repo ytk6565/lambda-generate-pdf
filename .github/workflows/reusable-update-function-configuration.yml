@@ -84,6 +84,11 @@ jobs:
           --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
           --zip-file fileb://${{ env.zip_file_name }}
 
+      - name: "Wait for Lambda function to be updated"
+        run: |
+          aws lambda wait function-updated \
+          --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
+
       - name: "Update Lambda function configuration"
         run: |
           aws lambda update-function-configuration \
