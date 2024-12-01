@@ -17,6 +17,8 @@ permissions:
 jobs:
   changes:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     outputs:
       exists: ${{ steps.filter.outputs.targets }}
     steps:
@@ -26,6 +28,7 @@ jobs:
           filters: |
             targets:
               - "packages/app/**"
+              - ".github/workflows/reusable-deploy-app.yml"
               - ".github/actions/upload-artifact/action.yml"
               - ".github/workflows/reusable-deploy-lambda-layer.yml"
 
