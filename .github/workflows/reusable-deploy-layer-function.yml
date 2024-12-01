@@ -81,7 +81,7 @@ jobs:
           include_basename: true
 
       - name: "Generate zip"
-        run: zip -r ${{ env.zip_file_name }} index.mjs src
+        run: zip -r ${{ env.zip_file_name }} packages/function/index.mjs packages/function/src
         working-directory: "packages/function"
 
       - name: "Update function code"
