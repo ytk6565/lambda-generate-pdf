@@ -79,7 +79,7 @@ jobs:
       - name: "Update function code"
         run: |
           aws lambda update-function-code \
-            --function-name ${{ inputs.AWS_LAMBDA_LAYERS_NAME }} \
+            --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
             --zip-file fileb://${{ env.zip_file_name }} \
             --region ap-northeast-1
 
