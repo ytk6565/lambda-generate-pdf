@@ -66,23 +66,25 @@ jobs:
         run: npm ci --only=prod
         working-directory: "packages/function"
 
+      - name: "Prepare function code"
+        run: |
+          mkdir -p packages/function/dist
+          cp -r packages/function/index.mjs packages/function/dist
+          cp -r packages/function/src/* packages/function/dist/src
+
+      - name: "Upload artifact function code"
+        uses: ./.github/actions/upload-artifact
+        with:
+          artifact_name: ${{ inputs.artifact_name_function_code }}
+          artifact_path: "packages/function/dist/**"
+          include_basename: false
+
       - name: "Upload artifact node_modules"
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name_node_modules }}
           artifact_path: "packages/function/node_modules"
           include_basename: true
-
-      - name: "Generate zip"
-        run: zip -r ../../${{ env.zip_file_name }} index.mjs src
-        working-directory: "packages/function"
-
-      - name: "Upload artifact function code"
-        uses: ./.github/actions/upload-artifact
-        with:
-          artifact_name: ${{ inputs.artifact_name_function_code }}
-          artifact_path: ${{ env.zip_file_name }}
-          include_basename: false
 
   call-publish-layer:
     uses: ./.github/workflows/reusable-publish-layer.yml
