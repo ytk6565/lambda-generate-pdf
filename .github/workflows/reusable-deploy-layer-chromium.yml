@@ -1,0 +1,67 @@
+name: "Reusable deploy chromium Lambda Layer"
+
+on:
+  workflow_call:
+    inputs:
+      AWS_LAMBDA_LAYERS_NAME:
+        type: string
+        required: true
+      artifact_name:
+        type: string
+        required: true
+    secrets:
+      AWS_ACCOUNT_ID:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  CHROMIUM_VERSION: "112.0.0"
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.filter.outputs.targets }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            targets:
+              - "packages/function/chromium/**"
+              - ".github/actions/upload-artifact/action.yml"
+              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
+              - ".github/workflows/reusable-deploy-layer-chromium.yml"
+              - ".github/workflows/reusable-publish-layer.yml"
+              - ".github/workflows/reusable-update-function-configuration.yml"
+
+  build-chromium:
+    needs: changes
+    if: ${{ needs.changes.outputs.exists == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Fetch Chromium"
+        run: |
+          wget "https://github.com/Sparticuz/chromium/releases/download/v${{ env.CHROMIUM_VERSION }}/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
+
+      - name: "Upload artifact"
+        uses: ./.github/actions/upload-artifact
+        with:
+          artifact_name: ${{ inputs.artifact_name }}
+          artifact_path: "chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
+          include_basename: false
+
+  call-publish-layer-version:
+    uses: ./.github/workflows/reusable-publish-layer.yml
+    needs: build-chromium
+    with:
+      AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
+      artifact_name: ${{ inputs.artifact_name }}
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
