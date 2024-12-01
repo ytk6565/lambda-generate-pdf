@@ -6,6 +6,9 @@ on:
       - "main"
     paths:
       - "packages/app/**"
+      - ".github/workflows/deploy-app.yml"
+      - ".github/actions/upload-artifact/action.yml"
+      - ".github/workflows/reusable-deploy-lambda-layer.yml"
 
 permissions:
   id-token: write
