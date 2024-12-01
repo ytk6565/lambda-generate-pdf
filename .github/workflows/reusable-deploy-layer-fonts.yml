@@ -50,8 +50,8 @@ jobs:
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name }}
-          artifact_path: "packages/function/fonts"
-          include_basename: true
+          artifact_path: "packages/function/fonts/**"
+          basepath: "fonts"
 
   call-publish-layer-version:
     uses: ./.github/workflows/reusable-publish-layer.yml

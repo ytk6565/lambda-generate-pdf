@@ -6,9 +6,6 @@ on:
       AWS_LAMBDA_FUNCTION_NAME:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_APP:
-        type: string
-        required: true
       AWS_LAMBDA_LAYER_NAME_FUNCTION:
         type: string
         required: true
@@ -30,15 +27,6 @@ permissions:
   contents: read
 
 jobs:
-  call-deploy-layer-app:
-    uses: ./.github/workflows/reusable-deploy-layer-app.yml
-    with:
-      AWS_LAMBDA_LAYERS_NAME: "generate-pdf-app"
-      env:
-      artifact_name: "generate-pdf-app--${{ inputs.env }}"
-    secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-
   call-deploy-layer-function:
     uses: ./.github/workflows/reusable-deploy-layer-function.yml
     with:
@@ -70,14 +58,12 @@ jobs:
     uses: ./.github/workflows/reusable-update-function-configuration.yml
     needs:
       [
-        call-deploy-layer-app,
         call-deploy-layer-function,
         call-deploy-layer-fonts,
         call-deploy-layer-chromium,
       ]
     with:
       AWS_LAMBDA_FUNCTION_NAME: ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
-      AWS_LAMBDA_LAYER_NAME_APP: ${{ inputs.AWS_LAMBDA_LAYER_NAME_APP }}
       AWS_LAMBDA_LAYER_NAME_FUNCTION: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FUNCTION }}
       AWS_LAMBDA_LAYER_NAME_FONTS: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
       AWS_LAMBDA_LAYER_NAME_CHROMIUM: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}

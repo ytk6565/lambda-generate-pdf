@@ -6,9 +6,6 @@ on:
       AWS_LAMBDA_FUNCTION_NAME:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_APP:
-        type: string
-        required: true
       AWS_LAMBDA_LAYER_NAME_FUNCTION:
         type: string
         required: true
@@ -47,12 +44,6 @@ jobs:
         with:
           aws-region: ap-northeast-1
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
-
-      - name: "Get Lambda Layer ARN suffix for app"
-        id: app_layer_arn_suffix
-        uses: ./.github/actions/get-lambda-layer-arn-suffix
-        with:
-          AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_APP }}
 
       - name: "Get Lambda Layer ARN suffix for function"
         id: function_layer_arn_suffix
@@ -94,7 +85,6 @@ jobs:
           aws lambda update-function-configuration \
           --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
           --layers \
-          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.app_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.function_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.chromium_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}

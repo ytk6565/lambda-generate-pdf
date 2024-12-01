@@ -38,7 +38,6 @@ jobs:
         with:
           filters: |
             targets:
-              - ".github/actions/upload-artifact/action.yml"
               - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
               - ".github/workflows/reusable-deploy-layer-chromium.yml"
               - ".github/workflows/reusable-update-function-configuration.yml"
@@ -79,4 +78,9 @@ jobs:
 
       - name: "Publish layer version"
         run: |
-          aws lambda publish-layer-version --layer-name ${{ inputs.AWS_LAMBDA_LAYERS_NAME }} --description "Chromium v${{ env.CHROMIUM_VERSION }}" --content "S3Bucket=${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }},S3Key=chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" --compatible-runtimes nodejs --compatible-architectures x86_64
+          aws lambda publish-layer-version \
+          --layer-name ${{ inputs.AWS_LAMBDA_LAYERS_NAME }} \
+          --description "Chromium v${{ env.CHROMIUM_VERSION }}" \
+          --content "S3Bucket=${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }},S3Key=chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" \
+          --compatible-runtimes nodejs \
+          --compatible-architectures x86_64

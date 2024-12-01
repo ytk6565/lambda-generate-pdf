@@ -9,10 +9,10 @@ inputs:
   artifact_path:
     required: true
     type: string
-  include_basename:
+  basepath:
     required: false
     type: boolean
-    default: false
+    default: ""
 
 runs:
   using: "composite"
@@ -20,12 +20,8 @@ runs:
     - name: "Prepare artifact"
       shell: bash
       run: |
-        BASENAME="/"
-        if [ "${{ inputs.include_basename }}" = "true" ]; then
-          BASENAME="$(basename "${{ inputs.artifact_path }}")/"
-        fi
         mkdir -p ./artifact
-        cp -r ${{ inputs.artifact_path }} ./artifact/$BASENAME
+        cp -r ${{ inputs.artifact_path }} ./artifact/${{ inputs.basepath }}
 
     - name: "Upload artifact"
       uses: actions/upload-artifact@v4

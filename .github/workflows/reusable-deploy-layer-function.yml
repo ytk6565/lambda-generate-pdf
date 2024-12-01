@@ -40,6 +40,7 @@ jobs:
         with:
           filters: |
             targets:
+              - "packages/app/**"
               - "packages/function/**"
               - ".github/actions/upload-artifact/action.yml"
               - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
@@ -55,14 +56,29 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: "Setup Node.js"
+      - name: "Setup Node.js for app"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.16.1"
+          cache: "npm"
+          cache-dependency-path: "packages/app/package-lock.json"
+
+      - name: "Install dependencies for app"
+        run: npm ci --only=prod
+        working-directory: "packages/app"
+
+      - name: "Build app"
+        run: npm run build
+        working-directory: "packages/app"
+
+      - name: "Setup Node.js for function"
         uses: actions/setup-node@v4
         with:
           node-version: "18.16.1"
           cache: "npm"
           cache-dependency-path: "packages/function/package-lock.json"
 
-      - name: "Install dependencies"
+      - name: "Install dependencies for function"
         run: npm ci --only=prod
         working-directory: "packages/function"
 
@@ -70,22 +86,23 @@ jobs:
         run: |
           mkdir -p packages/function/dist
           mkdir packages/function/dist/src
+          mkdir packages/function/dist/.output
           cp -r packages/function/index.mjs packages/function/dist
           cp -r packages/function/src/* packages/function/dist/src
+          cp -r packages/app/.output/* packages/function/dist/.output
 
       - name: "Upload artifact function code"
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name_function_code }}
           artifact_path: "packages/function/dist/**"
-          include_basename: false
 
       - name: "Upload artifact node_modules"
         uses: ./.github/actions/upload-artifact
         with:
           artifact_name: ${{ inputs.artifact_name_node_modules }}
-          artifact_path: "packages/function/node_modules"
-          include_basename: true
+          artifact_path: "packages/function/node_modules/**"
+          basepath: "nodejs/node_modules/"
 
   call-publish-layer:
     uses: ./.github/workflows/reusable-publish-layer.yml
