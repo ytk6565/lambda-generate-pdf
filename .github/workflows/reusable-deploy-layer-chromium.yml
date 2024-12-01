@@ -60,7 +60,11 @@ jobs:
       - name: "Check if same version Chromium exists"
         id: check_same_version
         run: |
-          EXISTS=$(aws s3 ls "s3://${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" && echo "true" || echo "false")
+          if aws s3 ls "s3://${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" > /dev/null 2>&1; then
+            EXISTS="true"
+          else
+            EXISTS="false"
+          fi
           echo "EXISTS=${EXISTS}" >> $GITHUB_OUTPUT
 
       - name: "Fetch Chromium"
