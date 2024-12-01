@@ -21,7 +21,7 @@ runs:
       shell: bash
       run: |
         BASENAME="/"
-        if [ "${{ inputs.include_basename" == "true" }} ]; then
+        if [ '${{ inputs.include_basename' == 'true' }} ]; then
           BASENAME="$(basename ${{ inputs.artifact_path }})/"
         fi
         mkdir -p ./artifact
