@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - "main"
-    paths:
-      - "packages/app/**"
-      - ".github/workflows/cd-production.yml"
-      - ".github/actions/upload-artifact/action.yml"
-      - ".github/workflows/reusable-deploy-lambda-layer.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

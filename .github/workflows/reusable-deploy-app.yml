@@ -15,7 +15,23 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.filter.outputs.targets }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            targets:
+              - "packages/app/**"
+              - ".github/actions/upload-artifact/action.yml"
+              - ".github/workflows/reusable-deploy-lambda-layer.yml"
+
   build-app:
+    needs: changes
+    if: ${{ needs.changes.outputs.exists == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
