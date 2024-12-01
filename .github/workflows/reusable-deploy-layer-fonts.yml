@@ -45,13 +45,6 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: "Upload artifact"
-        uses: ./.github/actions/upload-artifact
-        with:
-          artifact_name: ${{ inputs.artifact_name }}
-          artifact_path: "packages/function/fonts/**"
-          basepath: "fonts"
-
       - name: "Prepare"
         run: |
           mkdir -p ./packages/function/dist/fonts
