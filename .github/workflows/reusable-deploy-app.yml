@@ -6,6 +6,15 @@ on:
       ENV:
         type: string
         required: true
+      ARTIFACT_NAME:
+        type: string
+        required: true
+      AWS_LAMBDA_LAYERS_NAME:
+        type: string
+        required: true
+      AWS_LAMBDA_FUNCTION_NAME:
+        type: string
+        required: true
     secrets:
       AWS_ACCOUNT_ID:
         required: true
@@ -59,7 +68,7 @@ jobs:
       - name: "Upload artifact"
         uses: ./.github/actions/upload-artifact
         with:
-          ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
+          ARTIFACT_NAME: ${{ inputs.ARTIFACT_NAME }}
           ARTIFACT_PATH: "packages/app/.output"
           INCLUDE_BASENAME: true
 
@@ -68,7 +77,8 @@ jobs:
     needs: build-app
     with:
       ENV: ${{ inputs.ENV }}
-      LAYERS_NAME: "generate-pdf-app"
-      ARTIFACT_NAME: ${{ vars.ARTIFACT_NAME_APP }}
+      ARTIFACT_NAME: ${{ inputs.ARTIFACT_NAME }}
+      AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
+      AWS_LAMBDA_FUNCTION_NAME: ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

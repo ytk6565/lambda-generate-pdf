@@ -18,5 +18,8 @@ jobs:
     uses: ./.github/workflows/reusable-deploy-app.yml
     with:
       ENV: "production"
+      ARTIFACT_NAME: "generate-pdf-app--production"
+      AWS_LAMBDA_LAYERS_NAME: "generate-pdf-app"
+      AWS_LAMBDA_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

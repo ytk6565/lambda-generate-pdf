@@ -9,7 +9,10 @@ on:
       ARTIFACT_NAME:
         type: string
         required: true
-      LAYERS_NAME:
+      AWS_LAMBDA_LAYERS_NAME:
+        type: string
+        required: true
+      AWS_LAMBDA_FUNCTION_NAME:
         type: string
         required: true
     secrets:
@@ -18,9 +21,9 @@ on:
 
 env:
   AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
-  LAYERS_ARN: "arn:aws:lambda:ap-northeast-1:${{ secrets.AWS_ACCOUNT_ID }}:layer"
+  AWS_LAMBDA_LAYER_ARN: "arn:aws:lambda:ap-northeast-1:${{ secrets.AWS_ACCOUNT_ID }}:layer"
   DOWNLOAD_ARTIFACT_PATH: "artifacts"
-  LAYER_ZIP_FILE_NAME: "Layer.zip"
+  ZIP_FILE_NAME: "Layer.zip"
 
 permissions:
   id-token: write
@@ -52,15 +55,15 @@ jobs:
       - name: "Generate zip"
         run: |
           cd ${{ env.DOWNLOAD_ARTIFACT_PATH }}
-          zip -r ../${{ env.LAYER_ZIP_FILE_NAME }} ./
-          zip -r ../${{ env.LAYER_ZIP_FILE_NAME }} ./
+          zip -r ../${{ env.ZIP_FILE_NAME }} ./
+          zip -r ../${{ env.ZIP_FILE_NAME }} ./
 
       - name: "Publish new layer version"
         id: publish_layer
         run: |
           LAYER_VERSION=$(aws lambda publish-layer-version \
-            --layer-name ${{ inputs.LAYERS_NAME }} \
-            --zip-file fileb://${{ env.LAYER_ZIP_FILE_NAME }} \
+            --layer-name ${{ inputs.AWS_LAMBDA_LAYERS_NAME }} \
+            --zip-file fileb://${{ env.ZIP_FILE_NAME }} \
             --query 'Version' \
             --output text)
           echo "LAYER_VERSION=${LAYER_VERSION}" >> $GITHUB_OUTPUT
@@ -68,5 +71,5 @@ jobs:
       - name: "Update Lambda function configuration"
         run: |
           aws lambda update-function-configuration \
-          --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }} \
-          --layers ${{ env.LAYERS_ARN }}:${{ inputs.LAYERS_NAME }}:${{ steps.publish_layer.outputs.LAYER_VERSION }}
+          --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
+          --layers ${{ env.AWS_LAMBDA_LAYER_ARN }}:${{ inputs.AWS_LAMBDA_LAYERS_NAME }}:${{ steps.publish_layer.outputs.LAYER_VERSION }}
