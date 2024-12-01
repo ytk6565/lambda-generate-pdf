@@ -58,17 +58,18 @@ jobs:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
 
       - name: "Check if same version Chromium exists"
-        id: check-same-version
+        id: check_same_version
         run: |
-          aws s3 ls "s3://${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" && echo "exists=true" >> $GITHUB_OUTPUT || echo "exists=true" >> $GITHUB_OUTPUT
+          EXISTS=$(aws s3 ls "s3://${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" && echo "true" || echo "false")
+          echo "EXISTS=${EXISTS}" >> $GITHUB_OUTPUT
 
       - name: "Fetch Chromium"
-        if: steps.check-same-version.outputs.exists == 'false'
+        if: steps.check_same_version.outputs.EXISTS == 'false'
         run: |
           wget "https://github.com/Sparticuz/chromium/releases/download/v${{ env.CHROMIUM_VERSION }}/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
 
       - name: "Upload to S3"
-        if: steps.check-same-version.outputs.exists == 'false'
+        if: steps.check_same_version.outputs.EXISTS == 'false'
         run: |
           aws s3 cp "chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" "s3://${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
 
