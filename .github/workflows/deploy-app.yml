@@ -36,11 +36,6 @@ jobs:
         run: npm run build
         working-directory: "./packages/app"
 
-      - name: "Generate Layer.zip"
-        run: |
-          zip -r Layer.zip .output/
-        working-directory: "./packages/app"
-
       - name: "Upload artifact"
         uses: ./.github/actions/upload-artifact
         with:
