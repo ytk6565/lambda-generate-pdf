@@ -45,47 +45,27 @@ jobs:
 
       - name: "Get Lambda Layer ARN suffix for app"
         id: app_layer_arn_suffix
-        run: |
-          LAYER_VERSION=$(aws lambda list-layer-versions \
-          --layer-name ${{ inputs.AWS_LAMBDA_LAYER_NAME_APP }} \
-          --max-items 1 \
-          --no-paginate \
-          --query 'LayerVersions[0].Version' \
-          --output text)
-          echo "LAYER_ARN_SUFFIX=${{ inputs.AWS_LAMBDA_LAYER_NAME_APP }}:${LAYER_VERSION}" >> $GITHUB_ENV
+        uses: ./.github/actions/get-lambda-layer-arn-suffix
+        with:
+          AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_APP }}
 
       - name: "Get Lambda Layer ARN suffix for function"
         id: function_layer_arn_suffix
-        run: |
-          LAYER_VERSION=$(aws lambda list-layer-versions \
-          --layer-name ${{ inputs.AWS_LAMBDA_LAYER_NAME_FUNCTION }} \
-          --max-items 1 \
-          --no-paginate \
-          --query 'LayerVersions[0].Version' \
-          --output text)
-          echo "LAYER_ARN_SUFFIX=${{ inputs.AWS_LAMBDA_LAYER_NAME_FUNCTION }}:${LAYER_VERSION}" >> $GITHUB_ENV
+        uses: ./.github/actions/get-lambda-layer-arn-suffix
+        with:
+          AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FUNCTION }}
 
       - name: "Get Lambda Layer ARN suffix for fonts"
         id: fonts_layer_arn_suffix
-        run: |
-          LAYER_VERSION=$(aws lambda list-layer-versions \
-          --layer-name ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }} \
-          --max-items 1 \
-          --no-paginate \
-          --query 'LayerVersions[0].Version' \
-          --output text)
-          echo "LAYER_ARN_SUFFIX=${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}:${LAYER_VERSION}" >> $GITHUB_ENV
+        uses: ./.github/actions/get-lambda-layer-arn-suffix
+        with:
+          AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
 
       - name: "Get Lambda Layer ARN suffix for Chromium"
         id: chromium_layer_arn_suffix
-        run: |
-          LAYER_VERSION=$(aws lambda list-layer-versions \
-          --layer-name ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }} \
-          --max-items 1 \
-          --no-paginate \
-          --query 'LayerVersions[0].Version' \
-          --output text)
-          echo "LAYER_ARN_SUFFIX=${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}:${LAYER_VERSION}" >> $GITHUB_ENV
+        uses: ./.github/actions/get-lambda-layer-arn-suffix
+        with:
+          AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}
 
       - name: "Update Lambda function configuration"
         run: |
