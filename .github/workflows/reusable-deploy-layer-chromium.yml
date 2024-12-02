@@ -39,6 +39,7 @@ jobs:
           filters: |
             targets:
               - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
+              - ".github/workflows/reusable-deploy.yml"
               - ".github/workflows/reusable-deploy-layer-chromium.yml"
               - ".github/workflows/reusable-update-function-configuration.yml"
 

@@ -43,6 +43,7 @@ jobs:
               - "packages/app/**"
               - "packages/function/**"
               - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
+              - ".github/workflows/reusable-deploy.yml"
               - ".github/workflows/reusable-deploy-layer-function.yml"
               - ".github/workflows/reusable-publish-layer.yml"
               - ".github/workflows/reusable-update-function-configuration.yml"
