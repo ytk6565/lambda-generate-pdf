@@ -62,7 +62,7 @@ export const handler = async (
   }
 };
 
-// @ts-ignore
+// @ts-expect-error
 handler({}, {}, (_error, result) => {
   console.log(result);
 });

@@ -25,8 +25,8 @@ const generatePdf = async () => {
     executablePath: process.env.IS_LOCAL
       ? ""
       : await chromium.executablePath(),
-    // headless: process.env.IS_LOCAL ? false : chromium.headless,
-    headless: !process.env.IS_LOCAL,
+    // @ts-expect-error
+    headless: process.env.IS_LOCAL ? false : chromium.headless,
     ignoreHTTPSErrors: true,
   });
 
