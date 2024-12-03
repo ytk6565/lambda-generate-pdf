@@ -4,7 +4,7 @@ import { createServer } from 'node:http'
 import { S3Client } from "@aws-sdk/client-s3";
 import { generatePdf } from "./src/generatePdf";
 import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
-import { listener } from './.output/server'
+import { listener } from './.output/server/index.mjs'
 
 const BUCKET = "generate-pdf-documents";
 const s3 = new S3Client({ region: "ap-northeast-1" });
