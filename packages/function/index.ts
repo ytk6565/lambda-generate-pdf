@@ -17,14 +17,12 @@ const errorResponse = (errorMessage: string) => {
 };
 
 export const handler: Handler = async (_event, _context, callback) => {
-  try {
-    const server = createServer(".output/server/index.mjs");
+  const server = createServer(".output/server/index.mjs");
 
+  try {
     server.start();
 
     const pdfBuffers = await generatePdf();
-
-    server.stop();
 
     if (!pdfBuffers) {
       throw new Error("Failed to generate pdf");
@@ -49,6 +47,8 @@ export const handler: Handler = async (_event, _context, callback) => {
     const message = "Error: " + error;
 
     callback(null, errorResponse(message));
+  } finally {
+    server.stop();
   }
 };
 
