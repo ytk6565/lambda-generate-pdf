@@ -33,6 +33,7 @@ jobs:
   call-deploy-layer-function:
     uses: ./.github/workflows/reusable-deploy-layer-function.yml
     with:
+      AWS_LAMBDA_S3_BUCKET_NAME: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
       AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_NODE_MODULES }}
       env: ${{ inputs.env }}
       artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
@@ -43,6 +44,7 @@ jobs:
   call-deploy-layer-fonts:
     uses: ./.github/workflows/reusable-deploy-layer-fonts.yml
     with:
+      AWS_LAMBDA_S3_BUCKET_NAME: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
       AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
       artifact_name: "generate-pdf-fonts--${{ inputs.env }}"
     secrets:

@@ -3,6 +3,9 @@ name: "Reusable deploy function Lambda Layer"
 on:
   workflow_call:
     inputs:
+      AWS_LAMBDA_S3_BUCKET_NAME:
+        type: string
+        required: true
       AWS_LAMBDA_LAYERS_NAME:
         type: string
         required: true
@@ -122,7 +125,10 @@ jobs:
     uses: ./.github/workflows/reusable-publish-layer.yml
     needs: build-function
     with:
-      AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
       artifact_name: ${{ inputs.artifact_name_node_modules }}
+      s3_bucket_name: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
+      s3_file_path: "node_modules.zip"
+      lambda_layer_name: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
+      lambda_layer_description: "Node.js dependencies for Lambda function"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
