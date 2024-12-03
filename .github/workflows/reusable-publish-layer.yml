@@ -69,7 +69,7 @@ jobs:
         run: |
           aws lambda publish-layer-version \
           --layer-name ${{ inputs.lambda_layer_name }} \
-          --layer_ "${{ inputs.lambda_layer_description }}" \
+          --description "${{ inputs.lambda_layer_description }}" \
           --content "S3Bucket=${{ inputs.s3_bucket_name }},S3Key=${{ inputs.s3_file_path }}" \
           --compatible-runtimes nodejs \
           --compatible-architectures x86_64
