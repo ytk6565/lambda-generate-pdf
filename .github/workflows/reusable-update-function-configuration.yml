@@ -18,6 +18,12 @@ on:
       artifact_name_function_code:
         type: string
         required: true
+      s3_bucket_name:
+        type: string
+        required: true
+      s3_file_path_function_code:
+        type: string
+        required: true
     secrets:
       AWS_ACCOUNT_ID:
         required: true
@@ -73,7 +79,9 @@ jobs:
         run: |
           aws lambda update-function-code \
           --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
-          --zip-file fileb://${{ env.zip_file_name }}
+          --s3-bucket ${{ inputs.s3_bucket_name }} \
+          --s3-key ${{ inputs.s3_file_path_function_code }} \
+          --publish
 
       - name: "Wait for Lambda function to be updated"
         run: |

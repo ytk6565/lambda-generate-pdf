@@ -18,6 +18,9 @@ on:
       AWS_LAMBDA_LAYER_NAME_CHROMIUM:
         type: string
         required: true
+      s3_file_path_function_code:
+        type: string
+        required: true
       env:
         type: string
         required: true
@@ -33,11 +36,12 @@ jobs:
   call-deploy-layer-function:
     uses: ./.github/workflows/reusable-deploy-layer-function.yml
     with:
-      AWS_LAMBDA_S3_BUCKET_NAME: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
-      AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_NODE_MODULES }}
       env: ${{ inputs.env }}
       artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
       artifact_name_node_modules: "generate-pdf-node-modules--${{ inputs.env }}"
+      s3_bucket_name: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
+      s3_file_path_function_code: ${{ inputs.s3_file_path_function_code }}
+      lambda_layer_name_node_modules: ${{ inputs.AWS_LAMBDA_LAYER_NAME_NODE_MODULES }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
@@ -72,6 +76,8 @@ jobs:
       AWS_LAMBDA_LAYER_NAME_NODE_MODULES: ${{ inputs.AWS_LAMBDA_LAYER_NAME_NODE_MODULES }}
       AWS_LAMBDA_LAYER_NAME_FONTS: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
       AWS_LAMBDA_LAYER_NAME_CHROMIUM: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}
+      s3_bucket_name: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
+      s3_file_path_function_code: ${{ inputs.s3_file_path_function_code }}
       artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

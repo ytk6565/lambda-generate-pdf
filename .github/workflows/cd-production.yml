@@ -22,6 +22,7 @@ jobs:
       AWS_LAMBDA_LAYER_NAME_NODE_MODULES: "generate-pdf-node-modules"
       AWS_LAMBDA_LAYER_NAME_FONTS: "generate-pdf-fonts"
       AWS_LAMBDA_LAYER_NAME_CHROMIUM: "generate-pdf-chromium"
+      s3_file_path_function_code: "function-code.zip"
       env: "production"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

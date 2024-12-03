@@ -3,12 +3,6 @@ name: "Reusable deploy function Lambda Layer"
 on:
   workflow_call:
     inputs:
-      AWS_LAMBDA_S3_BUCKET_NAME:
-        type: string
-        required: true
-      AWS_LAMBDA_LAYERS_NAME:
-        type: string
-        required: true
       env:
         type: string
         required: true
@@ -16,6 +10,15 @@ on:
         type: string
         required: true
       artifact_name_node_modules:
+        type: string
+        required: true
+      s3_bucket_name:
+        type: string
+        required: true
+      s3_file_path_function_code:
+        type: string
+        required: true
+      lambda_layer_name_node_modules:
         type: string
         required: true
     secrets:
@@ -121,14 +124,24 @@ jobs:
           include-hidden-files: true
           retention-days: 1
 
-  call-publish-layer:
+  call-upload-to-s3-function-code:
+    uses: ./.github/workflows/reusable-upload-to-s3.yml
+    needs: build-function
+    with:
+      artifact_name: ${{ inputs.artifact_name_function_code }}
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
+      s3_file_path: ${{ inputs.s3_file_path_function_code }}
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+  call-publish-layer-node-modules:
     uses: ./.github/workflows/reusable-publish-layer.yml
     needs: build-function
     with:
       artifact_name: ${{ inputs.artifact_name_node_modules }}
-      s3_bucket_name: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
       s3_file_path: "node_modules.zip"
-      lambda_layer_name: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
+      lambda_layer_name: ${{ inputs.lambda_layer_name_node_modules }}
       lambda_layer_description: "Node.js dependencies for Lambda function"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
