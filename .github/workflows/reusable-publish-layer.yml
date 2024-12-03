@@ -62,7 +62,7 @@ jobs:
 
       - name: "Upload to S3"
         run: |
-          aws s3 cp "${{ steps.file_basename.outputs.BASENAME }}" "s3://${{ inputs.s3_file_path }}"
+          aws s3 cp "${{ steps.file_basename.outputs.BASENAME }}" "s3://${{ inputs.s3_bucket_name }}/${{ inputs.s3_file_path }}"
 
       - name: "Publish layer version"
         id: publish_layer
