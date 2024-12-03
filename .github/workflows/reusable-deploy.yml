@@ -30,7 +30,7 @@ jobs:
   call-deploy-layer-function:
     uses: ./.github/workflows/reusable-deploy-layer-function.yml
     with:
-      AWS_LAMBDA_LAYERS_NAME: "generate-pdf-function"
+      AWS_LAMBDA_LAYERS_NAME: "generate-pdf-node-modules"
       env: ${{ inputs.env }}
       artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
       artifact_name_node_modules: "generate-pdf-node-modules--${{ inputs.env }}"
