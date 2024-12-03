@@ -36,6 +36,7 @@ export const uploadResultFilesToS3 = async (
     };
   } catch (error) {
     console.error(`Error uploading files to S3: ${error}`);
-    throw new Error(`Failed to upload files to S3: ${error.message}`);
+    // @ts-expect-error
+    throw new Error(`Failed to upload files to S3: ${error?.message}`);
   }
 };
