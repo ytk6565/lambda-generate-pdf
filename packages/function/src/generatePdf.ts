@@ -33,7 +33,7 @@ const generatePdf = async () => {
   const page = await browser.newPage();
 
   // ダッシュボードにアクセスする
-  await page.goto("http://localhost:3001/document?message=こんばんは", {
+  await page.goto("http://localhost:3000/document?message=こんばんは", {
     waitUntil: "networkidle0",
   });
 
