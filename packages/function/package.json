@@ -7,7 +7,7 @@
     "typecheck": "tsc",
     "prebuild": "rm -rf dist",
     "build": "esbuild index.ts --bundle --minify --sourcemap --platform=node --format=esm --target=es2020 --outfile=dist/index.mjs --packages=external",
-    "postbuild": "cd dist && zip -r index.zip index.js*"
+    "postbuild": "cd dist && zip -r index.zip index.mjs*"
   },
   "author": "",
   "license": "ISC",
