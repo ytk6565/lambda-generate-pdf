@@ -6,8 +6,7 @@
   "scripts": {
     "typecheck": "tsc",
     "prebuild": "rm -rf dist",
-    "build": "esbuild index.ts src/**/**.ts --platform=node --format=esm --target=es2020 --outdir=dist --packages=external",
-    "postbuild": "cd dist && zip -r index.zip index.mjs*"
+    "build": "node esbuild.config.mjs"
   },
   "author": "",
   "license": "ISC",
