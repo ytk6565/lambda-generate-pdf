@@ -108,7 +108,7 @@ jobs:
       - name: "Upload artifact for node_modules"
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.lambda_layer_name_node_modules }}
+          name: generate-pdf-node-modules--${{ inputs.env }}
           path: ./packages/function/dependencies
           if-no-files-found: error
           include-hidden-files: true
