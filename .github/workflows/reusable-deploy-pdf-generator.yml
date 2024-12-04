@@ -5,9 +5,6 @@ on:
     inputs:
       lambda_function_name:
         type: string
-        required: true 
-      s3_bucket_name:
-        type: string
         required: true
       lambda_layer_name_node_modules:
         type: string
@@ -16,6 +13,9 @@ on:
         type: string
         required: true
       lambda_layer_name_chromium:
+        type: string
+        required: true
+      s3_bucket_name:
         type: string
         required: true
       s3_file_path_function_code:
@@ -32,44 +32,246 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  CHROMIUM_VERSION: "131.0.1"
+
 jobs:
-  call-deploy-layer-function:
-    uses: ./.github/workflows/reusable-deploy-layer-function.yml
+  function-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.filter.outputs.targets }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            targets:
+              - "packages/app/**"
+              - "packages/function/**"
+              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
+              - ".github/workflows/reusable-deploy.yml"
+              - ".github/workflows/reusable-deploy-layer-function.yml"
+              - ".github/workflows/reusable-publish-lambda-layer.yml"
+              - ".github/workflows/reusable-update-function-configuration.yml"
+
+  function-build:
+    needs: function-changes
+    if: ${{ needs.function-changes.outputs.exists == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Node.js for app"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.16.1"
+          cache: "npm"
+          cache-dependency-path: "packages/app/package-lock.json"
+
+      - name: "Install dependencies for app"
+        run: npm ci --only=prod
+        working-directory: "packages/app"
+
+      - name: "Build app"
+        run: npm run build
+        working-directory: "packages/app"
+
+      - name: "Setup Node.js for function"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.16.1"
+          cache: "npm"
+          cache-dependency-path: "packages/function/package-lock.json"
+
+      - name: "Install dependencies for function build"
+        run: npm ci
+        working-directory: "packages/function"
+
+      - name: "Build function"
+        run: npm run build
+        working-directory: "packages/function"
+
+      - name: "Install dependencies for deploy"
+        run: npm ci --only=prod
+        working-directory: "packages/function"
+
+      - name: "Prepare node_modules"
+        run: |
+          mkdir -p ./packages/function/dependencies/nodejs
+          cp -r ./packages/function/node_modules ./packages/function/dependencies/nodejs
+
+      - name: "Upload artifact for node_modules"
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.lambda_layer_name_node_modules }}
+          path: ./packages/function/dependencies
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
+      - name: "Prepare function code"
+        run: |
+          mkdir packages/function/dist/.output
+          cp -r packages/app/.output/ packages/function/dist
+
+      - name: "Upload artifact for function code"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "generate-pdf-function-code--${{ inputs.env }}"
+          path: ./packages/function/dist
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
+  function-code-upload:
+    uses: ./.github/workflows/reusable-upload-to-s3.yml
+    needs: function-build
     with:
-      env: ${{ inputs.env }}
-      artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
-      artifact_name_node_modules: "generate-pdf-node-modules--${{ inputs.env }}"
+      artifact_name: "generate-pdf-function-code--${{ inputs.env }}"
       s3_bucket_name: ${{ inputs.s3_bucket_name }}
-      s3_file_path_function_code: ${{ inputs.s3_file_path_function_code }}
-      lambda_layer_name_node_modules: ${{ inputs.lambda_layer_name_node_modules }}
+      s3_file_path: ${{ inputs.s3_file_path_function_code }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
-  call-deploy-layer-fonts:
-    uses: ./.github/workflows/reusable-deploy-layer-fonts.yml
+  node-modules-publish:
+    uses: ./.github/workflows/reusable-publish-lambda-layer.yml
+    needs: function-build
     with:
+      artifact_name: "generate-pdf-node-modules--${{ inputs.env }}"
       s3_bucket_name: ${{ inputs.s3_bucket_name }}
-      lambda_layer_name: ${{ inputs.lambda_layer_name_fonts }}
+      s3_file_path: "node_modules.zip"
+      lambda_layer_name: ${{ inputs.lambda_layer_name_node_modules }}
+      lambda_layer_description: "Node.js dependencies for Lambda function"
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+  fonts-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.filter.outputs.targets }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            targets:
+              - "packages/function/fonts/**"
+              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
+              - ".github/workflows/reusable-deploy.yml"
+              - ".github/workflows/reusable-deploy-layer-fonts.yml"
+              - ".github/workflows/reusable-publish-lambda-layer.yml"
+              - ".github/workflows/reusable-update-function-configuration.yml"
+
+  fonts-build:
+    needs: fonts-changes
+    if: ${{ needs.fonts-changes.outputs.exists == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Prepare"
+        run: |
+          mkdir -p ./packages/function/dist/fonts
+          cp -r ./packages/function/fonts ./packages/function/dist
+
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: "generate-pdf-fonts--${{ inputs.env }}"
+          path: ./packages/function/dist
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
+  fonts-publish:
+    uses: ./.github/workflows/reusable-publish-lambda-layer.yml
+    needs: fonts-build
+    with:
       artifact_name: "generate-pdf-fonts--${{ inputs.env }}"
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
+      s3_file_path: "fonts.zip"
+      lambda_layer_name: ${{ inputs.lambda_layer_name_fonts }}
+      lambda_layer_description: "Fonts for generate-pdf Lambda function"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
-  call-deploy-layer-chromium:
-    uses: ./.github/workflows/reusable-deploy-layer-chromium.yml
-    with:
-      lambda_layer_name: ${{ inputs.lambda_layer_name_chromium }}
-      s3_bucket_name: ${{ inputs.s3_bucket_name }}
-      artifact_name: "generate-pdf-chromium--${{ inputs.env }}"
-    secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  chromium-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.filter.outputs.targets }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            targets:
+              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
+              - ".github/workflows/reusable-deploy.yml"
+              - ".github/workflows/reusable-deploy-layer-chromium.yml"
+              - ".github/workflows/reusable-update-function-configuration.yml"
+
+  chromium-build:
+    needs: chromium-changes
+    if: ${{ needs.chromium-changes.outputs.exists == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+
+      - name: "Check if same version Chromium exists"
+        id: check_same_version
+        run: |
+          if aws s3 ls "s3://${{ inputs.s3_bucket_name }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" > /dev/null 2>&1; then
+            EXISTS="true"
+          else
+            EXISTS="false"
+          fi
+          echo "EXISTS=${EXISTS}" >> $GITHUB_OUTPUT
+
+      - name: "Fetch Chromium"
+        if: steps.check_same_version.outputs.EXISTS == 'false'
+        run: |
+          wget "https://github.com/Sparticuz/chromium/releases/download/v${{ env.CHROMIUM_VERSION }}/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
+
+      - name: "Upload to S3"
+        if: steps.check_same_version.outputs.EXISTS == 'false'
+        run: |
+          aws s3 cp "chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" "s3://${{ inputs.s3_bucket_name }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
+
+      - name: "Publish layer version"
+        run: |
+          aws lambda publish-layer-version \
+          --layer-name ${{ inputs.lambda_layer_name_chromium }} \
+          --description "Chromium v${{ env.CHROMIUM_VERSION }}" \
+          --content "S3Bucket=${{ inputs.s3_bucket_name }},S3Key=chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" \
+          --compatible-runtimes nodejs \
+          --compatible-architectures x86_64
 
   call-update-function-configuration:
     uses: ./.github/workflows/reusable-update-function-configuration.yml
     needs:
       [
-        call-deploy-layer-function,
-        call-deploy-layer-fonts,
-        call-deploy-layer-chromium,
+        function-code-upload,
+        node-modules-publish,
+        fonts-publish,
+        chromium-build,
       ]
     with:
       lambda_function_name: ${{ inputs.lambda_function_name }}
