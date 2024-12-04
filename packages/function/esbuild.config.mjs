@@ -22,12 +22,7 @@ const options = {
   target: "es2020",
   outdir: "dist",
   packages: "external",
-  entryPoints: [
-    "index.ts",
-    "worker.ts",
-    "src/generatePdf.ts",
-    "src/uploadResultFilesToS3.ts",
-  ],
+  entryPoints: ["index.ts", "src/**/*.ts"],
   bundle: false,
   plugins: [jsToMjs],
 };
