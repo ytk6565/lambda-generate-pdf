@@ -21,7 +21,7 @@ export const handler: Handler = async (_event, _context, callback) => {
   const server = createServer(listener)
   
   try {
-    server.listen(3000, '127.0.0.1')
+    server.listen(3000)
 
     const pdfBuffers = await generatePdf();
 
