@@ -23,31 +23,27 @@ export const handler: Handler = async (_event, _context, callback) => {
   try {
     server.listen(3000, '127.0.0.1')
 
-    // const pdfBuffers = await generatePdf();
+    const pdfBuffers = await generatePdf();
 
-    // if (!pdfBuffers) {
-    //   throw new Error("Failed to generate pdf");
-    // }
+    if (!pdfBuffers) {
+      throw new Error("Failed to generate pdf");
+    }
 
-    // const { pdfS3Key } = await uploadResultFilesToS3(s3, BUCKET, pdfBuffers);
+    const { pdfS3Key } = await uploadResultFilesToS3(s3, BUCKET, pdfBuffers);
 
-    // console.log(`PDF uploaded to S3 with key: ${pdfS3Key}`);
+    console.log(`PDF uploaded to S3 with key: ${pdfS3Key}`);
 
-    // const response = {
-    //   statusCode: 200,
-    //   body: JSON.stringify({
-    //     pdfS3Key,
-    //   }),
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // };
+    const response = {
+      statusCode: 200,
+      body: JSON.stringify({
+        pdfS3Key,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
 
-    // callback(null, response);
-
-    setTimeout(() => {
-      server.close()
-    }, 2000);
+    callback(null, response);
   } catch (error) {
     const message = "Error: " + error;
 
