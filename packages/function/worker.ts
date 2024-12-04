@@ -1,7 +1,7 @@
 import { parentPort, workerData } from "worker_threads";
 
-import { generatePdf } from "./generatePdf";
-import { uploadResultFilesToS3 } from "./uploadResultFilesToS3";
+import { generatePdf } from "./src/generatePdf";
+import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
 
 import { S3Client } from "@aws-sdk/client-s3";
 
