@@ -5,11 +5,10 @@ import path from "node:path";
 const jsToMjs = {
   name: "js-to-mjs",
   setup(build) {
-    // Find all relative imports (starting with ".") that ends with ".js" and
-    // replace the file extension with ".mjs"
-    build.onResolve({ filter: /^..+\.js$/ }, (args) => {
+    // src を含むパスの拡張子を .mjs に変更する
+    build.onResolve({ filter: /.*\/src\/.*\.ts/ }, (args) => {
       return {
-        path: path.join(args.resolveDir, args.path.slice(0, -3) + ".mjs"),
+        path: path.join(args.resolveDir, args.path + ".mjs"),
       };
     });
   },
@@ -21,9 +20,11 @@ const options = {
   format: "esm",
   target: "es2020",
   outdir: "dist",
+  outExtension: { ".js": ".mjs" },
   packages: "external",
-  entryPoints: ["index.ts", "src/**/*.ts"],
-  bundle: false,
+  entryPoints: ["index.ts"],
+  packages: "external",
+  bundle: true,
   plugins: [jsToMjs],
 };
 
