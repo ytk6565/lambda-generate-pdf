@@ -3,16 +3,16 @@ name: "Reusable update Lambda Function configuration"
 on:
   workflow_call:
     inputs:
-      AWS_LAMBDA_FUNCTION_NAME:
+      lambda_function_name:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_NODE_MODULES:
+      lambda_layer_name_node_modules:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_FONTS:
+      lambda_layer_name_fonts:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_CHROMIUM:
+      lambda_layer_name_chromium:
         type: string
         required: true
       artifact_name_function_code:
@@ -55,19 +55,19 @@ jobs:
         id: function_layer_arn_suffix
         uses: ./.github/actions/get-lambda-layer-arn-suffix
         with:
-          AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_NODE_MODULES }}
+          AWS_LAMBDA_LAYER_NAME: ${{ inputs.lambda_layer_name_node_modules }}
 
       - name: "Get Lambda Layer ARN suffix for fonts"
         id: fonts_layer_arn_suffix
         uses: ./.github/actions/get-lambda-layer-arn-suffix
         with:
-          AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
+          AWS_LAMBDA_LAYER_NAME: ${{ inputs.lambda_layer_name_fonts }}
 
       - name: "Get Lambda Layer ARN suffix for Chromium"
         id: chromium_layer_arn_suffix
         uses: ./.github/actions/get-lambda-layer-arn-suffix
         with:
-          AWS_LAMBDA_LAYER_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}
+          AWS_LAMBDA_LAYER_NAME: ${{ inputs.lambda_layer_name_chromium }}
 
       - name: "Download artifact and to zip"
         uses: ./.github/actions/download-artifact-and-to-zip
@@ -78,7 +78,7 @@ jobs:
       - name: "Update Lambda function code"
         run: |
           aws lambda update-function-code \
-          --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
+          --function-name ${{ inputs.lambda_function_name }} \
           --s3-bucket ${{ inputs.s3_bucket_name }} \
           --s3-key ${{ inputs.s3_file_path_function_code }} \
           --publish
@@ -86,12 +86,12 @@ jobs:
       - name: "Wait for Lambda function to be updated"
         run: |
           aws lambda wait function-updated \
-          --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
+          --function-name ${{ inputs.lambda_function_name }}
 
       - name: "Update Lambda function configuration"
         run: |
           aws lambda update-function-configuration \
-          --function-name ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }} \
+          --function-name ${{ inputs.lambda_function_name }} \
           --layers \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.function_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \

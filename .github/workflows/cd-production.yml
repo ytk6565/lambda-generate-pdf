@@ -15,13 +15,13 @@ permissions:
 
 jobs:
   call-deploy:
-    uses: ./.github/workflows/reusable-deploy.yml
+    uses: ./.github/workflows/reusable-deploy-pdf-generator.yml
     with:
-      AWS_LAMBDA_FUNCTION_NAME: "generate-pdf"
-      AWS_LAMBDA_S3_BUCKET_NAME: "generate-pdf-layer"
-      AWS_LAMBDA_LAYER_NAME_NODE_MODULES: "generate-pdf-node-modules"
-      AWS_LAMBDA_LAYER_NAME_FONTS: "generate-pdf-fonts"
-      AWS_LAMBDA_LAYER_NAME_CHROMIUM: "generate-pdf-chromium"
+      lambda_function_name: "generate-pdf"
+      lambda_layer_name_node_modules: "generate-pdf-node-modules"
+      lambda_layer_name_fonts: "generate-pdf-fonts"
+      lambda_layer_name_chromium: "generate-pdf-chromium"
+      s3_bucket_name: "generate-pdf-layer"
       s3_file_path_function_code: "function-code.zip"
       env: "production"
     secrets:

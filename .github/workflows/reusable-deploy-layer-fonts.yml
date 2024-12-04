@@ -3,10 +3,10 @@ name: "Reusable deploy fonts Lambda Layer"
 on:
   workflow_call:
     inputs:
-      AWS_LAMBDA_S3_BUCKET_NAME:
+      s3_bucket_name:
         type: string
         required: true
-      AWS_LAMBDA_LAYERS_NAME:
+      lambda_layer_name:
         type: string
         required: true
       artifact_name:
@@ -68,9 +68,9 @@ jobs:
     needs: build-fonts
     with:
       artifact_name: ${{ inputs.artifact_name }}
-      s3_bucket_name: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
       s3_file_path: "fonts.zip"
-      lambda_layer_name: ${{ inputs.AWS_LAMBDA_LAYERS_NAME }}
+      lambda_layer_name: ${{ inputs.lambda_layer_name }}
       lambda_layer_description: "Fonts for generate-pdf Lambda function"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}

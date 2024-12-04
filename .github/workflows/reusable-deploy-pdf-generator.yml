@@ -3,19 +3,19 @@ name: "Reusable deploy"
 on:
   workflow_call:
     inputs:
-      AWS_LAMBDA_FUNCTION_NAME:
+      lambda_function_name:
         type: string
         required: true 
-      AWS_LAMBDA_S3_BUCKET_NAME:
+      s3_bucket_name:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_NODE_MODULES:
+      lambda_layer_name_node_modules:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_FONTS:
+      lambda_layer_name_fonts:
         type: string
         required: true
-      AWS_LAMBDA_LAYER_NAME_CHROMIUM:
+      lambda_layer_name_chromium:
         type: string
         required: true
       s3_file_path_function_code:
@@ -39,17 +39,17 @@ jobs:
       env: ${{ inputs.env }}
       artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
       artifact_name_node_modules: "generate-pdf-node-modules--${{ inputs.env }}"
-      s3_bucket_name: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
       s3_file_path_function_code: ${{ inputs.s3_file_path_function_code }}
-      lambda_layer_name_node_modules: ${{ inputs.AWS_LAMBDA_LAYER_NAME_NODE_MODULES }}
+      lambda_layer_name_node_modules: ${{ inputs.lambda_layer_name_node_modules }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
   call-deploy-layer-fonts:
     uses: ./.github/workflows/reusable-deploy-layer-fonts.yml
     with:
-      AWS_LAMBDA_S3_BUCKET_NAME: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
-      AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
+      lambda_layer_name: ${{ inputs.lambda_layer_name_fonts }}
       artifact_name: "generate-pdf-fonts--${{ inputs.env }}"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -57,8 +57,8 @@ jobs:
   call-deploy-layer-chromium:
     uses: ./.github/workflows/reusable-deploy-layer-chromium.yml
     with:
-      AWS_LAMBDA_LAYERS_NAME: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}
-      AWS_LAMBDA_S3_BUCKET_NAME: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
+      lambda_layer_name: ${{ inputs.lambda_layer_name_chromium }}
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
       artifact_name: "generate-pdf-chromium--${{ inputs.env }}"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -72,11 +72,11 @@ jobs:
         call-deploy-layer-chromium,
       ]
     with:
-      AWS_LAMBDA_FUNCTION_NAME: ${{ inputs.AWS_LAMBDA_FUNCTION_NAME }}
-      AWS_LAMBDA_LAYER_NAME_NODE_MODULES: ${{ inputs.AWS_LAMBDA_LAYER_NAME_NODE_MODULES }}
-      AWS_LAMBDA_LAYER_NAME_FONTS: ${{ inputs.AWS_LAMBDA_LAYER_NAME_FONTS }}
-      AWS_LAMBDA_LAYER_NAME_CHROMIUM: ${{ inputs.AWS_LAMBDA_LAYER_NAME_CHROMIUM }}
-      s3_bucket_name: ${{ inputs.AWS_LAMBDA_S3_BUCKET_NAME }}
+      lambda_function_name: ${{ inputs.lambda_function_name }}
+      lambda_layer_name_node_modules: ${{ inputs.lambda_layer_name_node_modules }}
+      lambda_layer_name_fonts: ${{ inputs.lambda_layer_name_fonts }}
+      lambda_layer_name_chromium: ${{ inputs.lambda_layer_name_chromium }}
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
       s3_file_path_function_code: ${{ inputs.s3_file_path_function_code }}
       artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
     secrets:
