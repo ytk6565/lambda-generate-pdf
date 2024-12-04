@@ -14,7 +14,7 @@ const createServer = (endpoint: string) => {
   process.on("SIGQUIT", stop);
 
   const start = () => {
-    cp = exec(`NITRO_PORT=3001 node ${endpoint}`, (error, stdout, stderr) => {
+    cp = exec(`node ${endpoint}`, (error, stdout, stderr) => {
       if (error) {
         console.error("Error: ", error);
         return;
