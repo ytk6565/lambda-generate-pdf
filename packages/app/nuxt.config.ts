@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: false },
   srcDir: "src/",
-  nitro: {
-    preset: 'node',
-  },
+  // nitro: {
+  //   preset: 'node-listener',
+  // },
 })

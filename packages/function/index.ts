@@ -1,10 +1,11 @@
 import type { Handler } from "aws-lambda";
 
-import { createServer } from 'node:http'
+// import { createServer } from 'node:http'
 import { S3Client } from "@aws-sdk/client-s3";
+import { createServer } from "./src/createServer";
 import { generatePdf } from "./src/generatePdf";
 import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
-import { listener } from './.output/server/index.mjs'
+// import { listener } from './.output/server/index.mjs'
 
 const BUCKET = "generate-pdf-documents";
 const s3 = new S3Client({ region: "ap-northeast-1" });
@@ -18,10 +19,12 @@ const errorResponse = (errorMessage: string) => {
 };
 
 export const handler: Handler = async (_event, _context, callback) => {
-  const server = createServer(listener)
-  
+  // const server = createServer(listener)
+  const server = createServer(".output/server/index.mjs");
+
   try {
-    server.listen(3000)
+    // server.listen(3000)
+    server.start();
 
     const pdfBuffers = await generatePdf();
 
@@ -49,7 +52,8 @@ export const handler: Handler = async (_event, _context, callback) => {
 
     callback(null, errorResponse(message));
   } finally {
-    server.close()
+    // server.close();
+    server.stop();
   }
 };
 
