@@ -1,7 +1,7 @@
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 
-const generatePdf = async () => {
+const generatePdf = async (url: string) => {
   // Chromiumのグラフィックモードの設定を無効にする
   chromium.setGraphicsMode = false;
 
@@ -33,7 +33,7 @@ const generatePdf = async () => {
   const page = await browser.newPage();
 
   // ダッシュボードにアクセスする
-  await page.goto("http://0.0.0.0:3000/document?message=こんばんは", {
+  await page.goto(url, {
     waitUntil: "networkidle0",
   });
 

@@ -20,7 +20,9 @@ export const handler: Handler = async (_event, _context, callback) => {
     server.listen(3000);
 
     return new Promise((resolve, reject) => {
-      const worker = new Worker("./worker.js", { workerData: { url } });
+      const worker = new Worker("./worker.js", {
+        workerData: { url: "http://0.0.0.0:3000/document?message=こんばんは" },
+      });
 
       worker.on("message", (data) => resolve(data));
       worker.on("error", (err) => reject(err));

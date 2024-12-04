@@ -18,7 +18,7 @@ const errorResponse = (errorMessage: string) => {
 
 (async () => {
   try {
-    const pdfBuffers = await generatePdf();
+    const pdfBuffers = await generatePdf(workerData.url);
 
     if (!pdfBuffers) {
       throw new Error("Failed to generate pdf");
