@@ -33,6 +33,7 @@ permissions:
   contents: read
 
 env:
+  AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
   CHROMIUM_VERSION: "131.0.1"
 
 jobs:
