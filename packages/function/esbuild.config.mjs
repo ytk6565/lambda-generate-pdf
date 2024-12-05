@@ -8,9 +8,19 @@ const options = {
   outdir: "dist",
   outExtension: { ".js": ".mjs" },
   packages: "external",
-  external: [".output"],
   entryPoints: ["index.ts"],
   bundle: true,
+  plugins: [
+    {
+      name: "external-output",
+      setup(build) {
+        // Match an import called "./.output" and mark it as external
+        build.onResolve({ filter: /^\.\/\.output/ }, () => ({
+          external: true,
+        }));
+      },
+    },
+  ],
 };
 
 build(options).catch((err) => {
