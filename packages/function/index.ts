@@ -54,7 +54,7 @@ export const handler: Handler = async (_event, _context, callback) => {
 
     callback(null, response);
   } catch (error) {
-    const message = "Error: " + error;
+    const message = `Error:·${error}`;
 
     callback(null, errorResponse(message));
   } finally {
