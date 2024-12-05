@@ -271,6 +271,7 @@ jobs:
         fonts-publish,
         chromium-build,
       ]
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     with:
       lambda_function_name: ${{ inputs.lambda_function_name }}
       lambda_layer_name_node_modules: ${{ inputs.lambda_layer_name_node_modules }}
