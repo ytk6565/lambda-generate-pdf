@@ -1,39 +1,38 @@
 import type { S3Client } from "@aws-sdk/client-s3";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { v4 as uuidv4 } from "uuid";
 
+/**
+ * S3にファイルをアップロード
+ * @param s3Client S3クライアント
+ * @param s3BucketName S3バケット名
+ * @param s3FilePath S3ファイルパス
+ * @param pdfBuffer PDFバッファ
+ */
 export const uploadResultFilesToS3 = async (
-  s3: S3Client,
-  bucketName: string,
-  pdfBuffer: Buffer | undefined
-) => {
+  s3Client: S3Client,
+  s3BucketName: string,
+  s3FilePath: string,
+  pdfBuffer: Buffer | undefined,
+): Promise<void> => {
   if (!pdfBuffer) {
     throw new Error("PDF buffer is null or undefined");
   }
 
   console.log("Uploading files to S3...");
 
-  // S3にアップロードするためのユニークなキーを生成
-  const pdfS3Key = `documents/${uuidv4()}.pdf`;
-
-  console.log(`PDF S3 key: ${pdfS3Key}`);
+  console.log(`PDF S3 filepath: ${s3FilePath}`);
 
   try {
     // PDFファイルをS3にアップロード
     const putPdfCommand = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: pdfS3Key,
+      Bucket: s3BucketName,
+      Key: s3FilePath,
       Body: pdfBuffer,
       ContentType: "application/pdf",
     });
 
-    await s3.send(putPdfCommand);
-    console.log(`PDF file uploaded successfully: ${pdfS3Key}`);
-
-    // S3キーを返す
-    return {
-      pdfS3Key,
-    };
+    await s3Client.send(putPdfCommand);
+    console.log(`PDF file uploaded successfully: ${s3FilePath}`);
   } catch (error) {
     console.error(`Error uploading files to S3: ${error}`);
     // @ts-expect-error

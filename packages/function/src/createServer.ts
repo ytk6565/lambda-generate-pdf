@@ -1,7 +1,17 @@
-import type { ChildProcess } from "child_process";
-import { exec } from "child_process";
+import type { ChildProcess } from "node:child_process";
+import { exec } from "node:child_process";
 
-const createServer = (endpoint: string) => {
+type CreateServer = (endpoint: string) => {
+  start: () => void;
+  stop: () => void;
+};
+
+/**
+ * サーバーの生成
+ * @param endpoint エンドポイント
+ * @returns サーバー
+ */
+const createServer: CreateServer = (endpoint: string) => {
   let cp: ChildProcess | null = null;
 
   const stop = () => {

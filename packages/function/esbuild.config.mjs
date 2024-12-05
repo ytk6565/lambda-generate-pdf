@@ -8,6 +8,7 @@ const options = {
   outdir: "dist",
   outExtension: { ".js": ".mjs" },
   packages: "external",
+  external: [".output"],
   entryPoints: ["index.ts"],
   bundle: true,
 };

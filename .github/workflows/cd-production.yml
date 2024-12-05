@@ -14,6 +14,10 @@ permissions:
   contents: read
 
 jobs:
+  call-tests:
+    uses: ./.github/workflows/reusable-tests.yml
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   call-deploy:
     uses: ./.github/workflows/reusable-deploy-pdf-generator.yml
     with:

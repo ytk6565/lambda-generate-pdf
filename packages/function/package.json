@@ -5,6 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "typecheck": "tsc",
+    "check": "biome check --apply .",
+    "check:ci": "biome ci .",
+    "test": "vitest",
     "prebuild": "rm -rf dist",
     "build": "node esbuild.config.mjs"
   },
@@ -17,10 +20,12 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.701.0",
+    "@biomejs/biome": "^1.9.4",
     "@sparticuz/chromium": "^131.0.1",
     "@types/aws-lambda": "^8.10.146",
     "@types/uuid": "^10.0.0",
     "esbuild": "^0.24.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }

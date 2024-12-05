@@ -1,12 +1,17 @@
 import type { Handler } from "aws-lambda";
 
-import { S3Client } from "@aws-sdk/client-s3";
-import { createServer } from "./src/createServer";
-import { generatePdf } from "./src/generatePdf";
-import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
+import { createServer } from "node:http";
 
-const BUCKET = "generate-pdf-documents";
-const s3 = new S3Client({ region: "ap-northeast-1" });
+import { S3Client } from "@aws-sdk/client-s3";
+
+import { createBrowser } from "./src/createBrowser";
+import { generatePdfFactory } from "./src/generatePdf";
+import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
+import { listener } from ".output/server/index.mjs";
+
+const S3_BUCKET_NAME = "generate-pdf-documents";
+const S3_FILE_PATH = "hello-world.pdf";
+const REQUEST_URL = "http://0.0.0.0:3000/document?message=Hello%20World";
 
 const errorResponse = (errorMessage: string) => {
   console.error(errorMessage);
@@ -17,28 +22,30 @@ const errorResponse = (errorMessage: string) => {
 };
 
 export const handler: Handler = async (_event, _context, callback) => {
-  const server = createServer(".output/server/index.mjs");
+  const s3Client = new S3Client({ region: "ap-northeast-1" });
+  const server = createServer(listener);
+  const browser = await createBrowser();
+
+  const generatePdf = generatePdfFactory(browser);
 
   try {
-    // server.listen(3000)
-    server.start();
+    server.listen(3000);
 
-    const pdfBuffers = await generatePdf(
-      "http://0.0.0.0:3000/document?message=こんばんは"
+    const pdfBuffers = await generatePdf(REQUEST_URL);
+
+    await uploadResultFilesToS3(
+      s3Client,
+      S3_BUCKET_NAME,
+      S3_FILE_PATH,
+      pdfBuffers,
     );
 
-    if (!pdfBuffers) {
-      throw new Error("Failed to generate pdf");
-    }
-
-    const { pdfS3Key } = await uploadResultFilesToS3(s3, BUCKET, pdfBuffers);
-
-    console.log(`PDF uploaded to S3 with key: ${pdfS3Key}`);
+    console.log(`PDF uploaded to S3 with key: ${S3_FILE_PATH}`);
 
     const response = {
       statusCode: 200,
       body: JSON.stringify({
-        pdfS3Key,
+        s3FilePath: S3_FILE_PATH,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -51,11 +58,6 @@ export const handler: Handler = async (_event, _context, callback) => {
 
     callback(null, errorResponse(message));
   } finally {
-    server.stop();
+    server.close();
   }
 };
-
-// @ts-expect-error
-handler({}, {}, (_error, result) => {
-  console.log(result);
-});

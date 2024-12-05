@@ -1,35 +1,16 @@
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+import type { Browser } from "puppeteer-core";
 
-const generatePdf = async (url: string) => {
-  // Chromiumのグラフィックモードの設定を無効にする
-  chromium.setGraphicsMode = false;
+// import { Writable } from "node:stream";
 
-  // Puppeteerを使用してブラウザをランチするための設定
-  const browser = await puppeteer.launch({
-    args: process.env.IS_LOCAL
-      ? puppeteer.defaultArgs()
-      : [
-          "--disable-gpu",
-          "--disable-dev-shm-usage",
-          "--disable-setuid-sandbox",
-          "--no-first-run",
-          "--no-sandbox",
-          "--no-zygote",
-          "--single-process",
-          "--proxy-server='direct://'",
-          "--proxy-bypass-list=*",
-          "--font-render-hinting=none",
-        ],
-    defaultViewport: chromium.defaultViewport,
-    executablePath: process.env.IS_LOCAL
-      ? ""
-      : await chromium.executablePath(),
-    // @ts-expect-error
-    headless: process.env.IS_LOCAL ? false : chromium.headless,
-    ignoreHTTPSErrors: true,
-  });
+// import PDFDocument from "pdfkit";
 
+/**
+ * PDF生成
+ * @param browser ブラウザ
+ * @param url URL
+ * @returns PDFバッファ
+ */
+export const generatePdfFactory = (browser: Browser) => async (url: string) => {
   const page = await browser.newPage();
 
   // ダッシュボードにアクセスする
@@ -42,6 +23,27 @@ const generatePdf = async (url: string) => {
     printBackground: true,
   });
 
+  // // PDFを暗号化
+  // const stream = new Writable();
+
+  // stream.write(pdfBuffer);
+
+  // const doc = new PDFDocument({
+  //   ownerPassword: "owner",
+  //   userPassword: "user",
+  //   permissions: {
+  //     printing: "highResolution",
+  //     modifying: false,
+  //     copying: false,
+  //     annotating: false,
+  //     fillingForms: false,
+  //     contentAccessibility: false,
+  //     documentAssembly: false,
+  //   },
+  // });
+  // doc.pipe(stream);
+  // doc.end();
+
   console.log("PDFが生成されました");
 
   // リソースをクリーンアップ
@@ -50,5 +52,3 @@ const generatePdf = async (url: string) => {
 
   return pdfBuffer;
 };
-
-export { generatePdf };
