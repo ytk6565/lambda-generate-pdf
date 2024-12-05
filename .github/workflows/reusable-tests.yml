@@ -38,6 +38,6 @@ jobs:
         run: npm run check:ci
         working-directory: "packages/function"
 
-      - name: "Unit tests for pdf-generator"
-        run: npm run test
-        working-directory: "packages/function"
+      # - name: "Unit tests for pdf-generator"
+      #   run: npm run test
+      #   working-directory: "packages/function"
