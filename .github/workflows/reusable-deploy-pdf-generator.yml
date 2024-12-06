@@ -1,4 +1,4 @@
-name: "Reusable deploy pdf generator"
+name: "Reusable deploy pdf generator workflow"
 
 on:
   workflow_call:
