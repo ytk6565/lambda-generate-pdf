@@ -23,7 +23,7 @@ async function encryptPdf(
   try {
     const args = [
       "--encrypt",
-      "userpass",
+      '""', // 閲覧可能にするため、ユーザーパスワードは設定しない
       ownerPassword,
       "256",
       "--print=none",
@@ -51,31 +51,43 @@ async function encryptPdf(
 export const generatePdfFactory = (browser: Browser) => async (url: string) => {
   const page = await browser.newPage();
 
-  // ダッシュボードにアクセスする
-  await page.goto(url, {
-    waitUntil: "networkidle0",
-  });
+  try {
+    await page.goto(url, {
+      waitUntil: "networkidle0",
+    });
 
-  // PDFを生成
-  await page.pdf({
-    printBackground: true,
-    path: OUTPUT_PDF_PATH,
-  });
+    // PDFを生成
+    await page.pdf({
+      printBackground: true,
+      path: OUTPUT_PDF_PATH,
+    });
 
-  await encryptPdf(
-    OUTPUT_PDF_PATH,
-    OUTPUT_ENCRYPTED_PDF_PATH,
-    "owner-password"
-  );
+    await encryptPdf(
+      OUTPUT_PDF_PATH,
+      OUTPUT_ENCRYPTED_PDF_PATH,
+      "owner-password"
+    );
 
-  console.log("PDFが生成されました");
+    console.log("PDFが生成されました");
 
-  // リソースをクリーンアップ
-  await page.close();
-  await browser.close();
+    // リソースをクリーンアップ
+    await page.close();
+    await browser.close();
 
-  // PDFバッファを返す
-  const pdfBuffer = promises.readFile(OUTPUT_ENCRYPTED_PDF_PATH);
+    // PDFバッファを読み込む
+    const pdfBuffer = await promises.readFile(OUTPUT_ENCRYPTED_PDF_PATH);
 
-  return pdfBuffer;
+    return pdfBuffer;
+  } catch (error) {
+    console.error("PDF処理中にエラーが発生しました:", error);
+    throw error;
+  } finally {
+    // リソースのクリーンアップ
+    await Promise.all([
+      page.close(),
+      browser.close(),
+      promises.unlink(OUTPUT_PDF_PATH).catch(() => {}),
+      promises.unlink(OUTPUT_ENCRYPTED_PDF_PATH).catch(() => {}),
+    ]);
+  }
 };
