@@ -1,11 +1,13 @@
 import type { Browser } from "puppeteer-core";
 
 import { execFile } from "node:child_process";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { promises } from "node:fs";
 import { promisify } from "node:util";
 
-const OUTPUT_PDF_PATH = "/tmp/output.pdf";
-const OUTPUT_ENCRYPTED_PDF_PATH = "/tmp/output-encrypted.pdf";
+const OUTPUT_PDF_PATH = join(tmpdir(), "output.pdf");
+const OUTPUT_ENCRYPTED_PDF_PATH = join(tmpdir(), "/tmp/output-encrypted.pdf");
 
 const promisifiedExecFile = promisify(execFile);
 
@@ -69,10 +71,6 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
     );
 
     console.log("PDFが生成されました");
-
-    // リソースをクリーンアップ
-    await page.close();
-    await browser.close();
 
     // PDFバッファを読み込む
     const pdfBuffer = await promises.readFile(OUTPUT_ENCRYPTED_PDF_PATH);
