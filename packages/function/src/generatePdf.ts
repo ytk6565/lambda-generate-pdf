@@ -7,7 +7,7 @@ import { promises } from "node:fs";
 import { promisify } from "node:util";
 
 const OUTPUT_PDF_PATH = join(tmpdir(), "output.pdf");
-const OUTPUT_ENCRYPTED_PDF_PATH = join(tmpdir(), "/tmp/output-encrypted.pdf");
+const OUTPUT_ENCRYPTED_PDF_PATH = join(tmpdir(), "output-encrypted.pdf");
 
 const promisifiedExecFile = promisify(execFile);
 
