@@ -320,7 +320,7 @@ jobs:
       - name: "Publish layer version"
         run: |
           aws lambda publish-layer-version \
-          --layer-name ${{ inputs.lambda_layer_name_chromium }} \
+          --layer-name ${{ inputs.lambda_layer_name_qpdf }} \
           --description "QPDF v${{ env.QPDF_VERSION }}" \
           --content "S3Bucket=${{ inputs.s3_bucket_name }},S3Key=qpdfLayers/qpdf-v${{ env.QPDF_VERSION }}-layer.zip" \
           --compatible-architectures x86_64
