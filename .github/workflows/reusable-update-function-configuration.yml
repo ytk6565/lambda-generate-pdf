@@ -15,6 +15,9 @@ on:
       lambda_layer_name_chromium:
         type: string
         required: true
+      lambda_layer_name_qpdf:
+        type: string
+        required: true
       artifact_name_function_code:
         type: string
         required: true
@@ -68,6 +71,12 @@ jobs:
         uses: ./.github/actions/get-lambda-layer-arn-suffix
         with:
           AWS_LAMBDA_LAYER_NAME: ${{ inputs.lambda_layer_name_chromium }}
+          
+      - name: "Get Lambda Layer ARN suffix for Chromium"
+        id: qpdf_layer_arn_suffix
+        uses: ./.github/actions/get-lambda-layer-arn-suffix
+        with:
+          AWS_LAMBDA_LAYER_NAME: ${{ inputs.lambda_layer_name_qpdf }}
 
       - name: "Download artifact and to zip"
         uses: ./.github/actions/download-artifact-and-to-zip
@@ -96,3 +105,4 @@ jobs:
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.function_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.chromium_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}
+          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.qpdf_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}

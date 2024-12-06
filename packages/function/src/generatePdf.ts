@@ -1,8 +1,10 @@
 import type { Browser } from "puppeteer-core";
 
-// import { Writable } from "node:stream";
+import { promises } from "node:fs";
+import { exec } from "node:child_process";
 
-// import PDFDocument from "pdfkit";
+const OUTPUT_PDF_PATH = "/tmp/output.pdf";
+const OUTPUT_ENCRYPTED_PDF_PATH = "/tmp/output-encrypted.pdf";
 
 /**
  * PDF生成
@@ -19,36 +21,34 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
   });
 
   // PDFを生成
-  const pdfBuffer = await page.pdf({
+  await page.pdf({
     printBackground: true,
+    path: OUTPUT_PDF_PATH,
   });
 
-  // // PDFを暗号化
-  // const stream = new Writable();
-
-  // stream.write(pdfBuffer);
-
-  // const doc = new PDFDocument({
-  //   ownerPassword: "owner",
-  //   userPassword: "user",
-  //   permissions: {
-  //     printing: "highResolution",
-  //     modifying: false,
-  //     copying: false,
-  //     annotating: false,
-  //     fillingForms: false,
-  //     contentAccessibility: false,
-  //     documentAssembly: false,
-  //   },
-  // });
-  // doc.pipe(stream);
-  // doc.end();
+  exec(
+    `qpdf --encrypt "" ownerpass 256 --print=none --modify=none --extract=n --annotate=n -- ${OUTPUT_PDF_PATH} ${OUTPUT_ENCRYPTED_PDF_PATH}`,
+    (error, stdout: string, stderr: string) => {
+      if (error) {
+        console.error(`エラーが発生しました: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.error(`エラーが発生しました: ${stderr}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+    }
+  );
 
   console.log("PDFが生成されました");
 
   // リソースをクリーンアップ
   await page.close();
   await browser.close();
+
+  // PDFバッファを返す
+  const pdfBuffer = await promises.readFile(OUTPUT_ENCRYPTED_PDF_PATH);
 
   return pdfBuffer;
 };
