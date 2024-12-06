@@ -1,13 +1,46 @@
 import type { Browser } from "puppeteer-core";
 
-import { promisify } from "node:util";
+import { execFile } from "node:child_process";
 import { promises } from "node:fs";
-import { exec } from "node:child_process";
+import { promisify } from "node:util";
 
 const OUTPUT_PDF_PATH = "/tmp/output.pdf";
 const OUTPUT_ENCRYPTED_PDF_PATH = "/tmp/output-encrypted.pdf";
 
-const promisifiedExec = promisify(exec);
+const promisifiedExecFile = promisify(execFile);
+
+/**
+ * PDF暗号化
+ * @param inputPath 入力ファイルパス
+ * @param outputPath 出力ファイルパス
+ * @param ownerPassword オーナーパスワード
+ */
+async function encryptPdf(
+  inputPath: string,
+  outputPath: string,
+  ownerPassword: string
+) {
+  try {
+    const args = [
+      "--encrypt",
+      "userpass",
+      ownerPassword,
+      "256",
+      "--print=none",
+      "--modify=none",
+      "--extract=n",
+      "--annotate=n",
+      "--",
+      inputPath,
+      outputPath,
+    ];
+
+    await promisifiedExecFile("qpdf", args);
+  } catch (error) {
+    console.error("PDF暗号化中にエラーが発生しました:", error);
+    throw new Error("PDF暗号化に失敗しました");
+  }
+}
 
 /**
  * PDF生成
@@ -29,8 +62,10 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
     path: OUTPUT_PDF_PATH,
   });
 
-  await promisifiedExec(
-    `qpdf --encrypt "" ownerpass 256 --print=none --modify=none --extract=n --annotate=n -- ${OUTPUT_PDF_PATH} ${OUTPUT_ENCRYPTED_PDF_PATH}`,
+  await encryptPdf(
+    OUTPUT_PDF_PATH,
+    OUTPUT_ENCRYPTED_PDF_PATH,
+    "owner-password"
   );
 
   console.log("PDFが生成されました");
