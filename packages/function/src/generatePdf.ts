@@ -6,6 +6,19 @@ import { join } from "node:path";
 import { promises } from "node:fs";
 import { promisify } from "node:util";
 
+import { PDFDocument } from "pdf-lib";
+
+type Metadata = {
+  title: string;
+  author: string;
+  subject: string;
+  keywords: string[];
+  producer: string;
+  creator: string;
+  creationDate: Date;
+  modificationDate: Date;
+};
+
 const PAGE_NAVIGATION_TIMEOUT = 3000; // 3秒
 const PDF_GENERATION_TIMEOUT = 10000; // 10秒
 
@@ -13,6 +26,24 @@ const outputPdfPath = join(tmpdir(), "output.pdf");
 const outputEncryptedPdfPath = join(tmpdir(), "output-encrypted.pdf");
 
 const promisifiedExecFile = promisify(execFile);
+
+const setMetadata = async (
+  buffer: Buffer,
+  metadata: Metadata
+): Promise<Uint8Array> => {
+  const pdfDoc = await PDFDocument.load(buffer);
+
+  pdfDoc.setTitle(metadata.title);
+  pdfDoc.setAuthor(metadata.author);
+  pdfDoc.setSubject(metadata.subject);
+  pdfDoc.setKeywords(metadata.keywords);
+  pdfDoc.setProducer(metadata.producer);
+  pdfDoc.setCreator(metadata.creator);
+  pdfDoc.setCreationDate(metadata.creationDate);
+  pdfDoc.setModificationDate(metadata.modificationDate);
+
+  return await pdfDoc.save();
+};
 
 /**
  * PDF暗号化
@@ -51,17 +82,28 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
     });
 
     // PDFを生成
-    await page.pdf({
+    const pdf = await page.pdf({
       printBackground: true,
-      path: outputPdfPath,
       timeout: PDF_GENERATION_TIMEOUT,
     });
 
-    await encryptPdf(
-      outputPdfPath,
-      outputEncryptedPdfPath,
-      "owner-password"
-    );
+    // PDFメタデータを設定
+    const pdfWithMetadata = await setMetadata(pdf, {
+      title: "PDF Title",
+      author: "PDF Author",
+      subject: "PDF Subject",
+      keywords: ["Keyword1", "Keyword2"],
+      producer: "PDF Producer",
+      creator: "PDF Creator",
+      creationDate: new Date(),
+      modificationDate: new Date(),
+    });
+
+    // PDFを保存
+    await promises.writeFile(outputPdfPath, pdfWithMetadata);
+
+    // PDFを暗号化
+    await encryptPdf(outputPdfPath, outputEncryptedPdfPath, "owner-password");
 
     console.log("PDFが生成されました");
 
