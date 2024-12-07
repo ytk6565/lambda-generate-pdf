@@ -9,8 +9,8 @@ import { promisify } from "node:util";
 const PAGE_NAVIGATION_TIMEOUT = 3000; // 3秒
 const PDF_GENERATION_TIMEOUT = 10000; // 10秒
 
-const OUTPUT_PDF_PATH = join(tmpdir(), "output.pdf");
-const OUTPUT_ENCRYPTED_PDF_PATH = join(tmpdir(), "output-encrypted.pdf");
+const outputPdfPath = join(tmpdir(), "output.pdf");
+const outputEncryptedPdfPath = join(tmpdir(), "output-encrypted.pdf");
 
 const promisifiedExecFile = promisify(execFile);
 
@@ -65,20 +65,20 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
     // PDFを生成
     await page.pdf({
       printBackground: true,
-      path: OUTPUT_PDF_PATH,
+      path: outputPdfPath,
       timeout: PDF_GENERATION_TIMEOUT,
     });
 
     await encryptPdf(
-      OUTPUT_PDF_PATH,
-      OUTPUT_ENCRYPTED_PDF_PATH,
+      outputPdfPath,
+      outputEncryptedPdfPath,
       "owner-password"
     );
 
     console.log("PDFが生成されました");
 
     // PDFバッファを読み込む
-    const pdfBuffer = await promises.readFile(OUTPUT_ENCRYPTED_PDF_PATH);
+    const pdfBuffer = await promises.readFile(outputEncryptedPdfPath);
 
     return pdfBuffer;
   } catch (error) {
@@ -88,8 +88,8 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
     // リソースのクリーンアップ
     await Promise.all([
       page.close(),
-      promises.unlink(OUTPUT_PDF_PATH).catch(() => {}),
-      promises.unlink(OUTPUT_ENCRYPTED_PDF_PATH).catch(() => {}),
+      promises.unlink(outputPdfPath).catch(() => {}),
+      promises.unlink(outputEncryptedPdfPath).catch(() => {}),
     ]);
   }
 };
