@@ -6,6 +6,9 @@ import { join } from "node:path";
 import { promises } from "node:fs";
 import { promisify } from "node:util";
 
+const PAGE_NAVIGATION_TIMEOUT = 3000; // 3秒
+const PDF_GENERATION_TIMEOUT = 10000; // 10秒
+
 const OUTPUT_PDF_PATH = join(tmpdir(), "output.pdf");
 const OUTPUT_ENCRYPTED_PDF_PATH = join(tmpdir(), "output-encrypted.pdf");
 
@@ -56,12 +59,14 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
   try {
     await page.goto(url, {
       waitUntil: "networkidle0",
+      timeout: PAGE_NAVIGATION_TIMEOUT,
     });
 
     // PDFを生成
     await page.pdf({
       printBackground: true,
       path: OUTPUT_PDF_PATH,
+      timeout: PDF_GENERATION_TIMEOUT,
     });
 
     await encryptPdf(
