@@ -15,7 +15,7 @@ on:
       lambda_layer_name_chromium:
         type: string
         required: true
-      lambda_layer_name_qpdf:
+      lambda_layer_name_pdfcpu:
         type: string
         required: true
       s3_bucket_name:
@@ -38,7 +38,7 @@ permissions:
 env:
   AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
   CHROMIUM_VERSION: "131.0.1"
-  QPDF_VERSION: "11.9.1"
+  PDFCPU_VERSION: "0.9.1"
 
 jobs:
   function-changes:
@@ -266,7 +266,7 @@ jobs:
           --compatible-runtimes nodejs \
           --compatible-architectures x86_64
 
-  qpdf-changes:
+  pdfcpu-changes:
     runs-on: ubuntu-latest
     outputs:
       exists: ${{ steps.filter.outputs.targets }}
@@ -283,9 +283,9 @@ jobs:
               - ".github/workflows/reusable-deploy-pdf-generator.yml"
               - ".github/workflows/reusable-update-function-configuration.yml"
 
-  qpdf-build:
-    needs: qpdf-changes
-    if: ${{ needs.qpdf-changes.outputs.exists == 'true' }}
+  pdfcpu-build:
+    needs: pdfcpu-changes
+    if: ${{ needs.pdfcpu-changes.outputs.exists == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -297,32 +297,36 @@ jobs:
           aws-region: ap-northeast-1
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
 
-      - name: "Check if same version QPDF exists"
+      - name: "Check if same version pdfcpu exists"
         id: check_same_version
         run: |
-          if aws s3 ls "s3://${{ inputs.s3_bucket_name }}/qpdfLayers/qpdf-v${{ env.CHROMIUM_VERSION }}-layer.zip" > /dev/null 2>&1; then
+          if aws s3 ls "s3://${{ inputs.s3_bucket_name }}/pdfcpuLayers/pdfcpu-v${{ env.CHROMIUM_VERSION }}-layer.zip" > /dev/null 2>&1; then
             EXISTS="true"
           else
             EXISTS="false"
           fi
           echo "EXISTS=${EXISTS}" >> $GITHUB_OUTPUT
 
-      - name: "Fetch QPDF"
+      - name: "Fetch pdfcpu"
         if: steps.check_same_version.outputs.EXISTS == 'false'
-        run: |
-          wget "https://github.com/qpdf/qpdf/releases/download/v${{ env.QPDF_VERSION }}/qpdf-${{ env.QPDF_VERSION }}-bin-linux-x86_64.zip"
+        run: \
+          wget "https://github.com/pdfcpu/pdfcpu/releases/download/v${{ env.PDFCPU_VERSION }}/pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.tar.xz"
+          tar -xvf "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.tar.xz"
+          mkdir bin/
+          mv "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64/pdfcpu" bin/
+          zip -r "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.zip" bin/
 
       - name: "Upload to S3"
         if: steps.check_same_version.outputs.EXISTS == 'false'
         run: |
-          aws s3 cp "qpdf-${{ env.QPDF_VERSION }}-bin-linux-x86_64.zip" "s3://${{ inputs.s3_bucket_name }}/qpdfLayers/qpdf-v${{ env.QPDF_VERSION }}-layer.zip"
+          aws s3 cp "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.zip" "s3://${{ inputs.s3_bucket_name }}/pdfcpuLayers/pdfcpu-v${{ env.PDFCPU_VERSION }}-layer.zip"
 
       - name: "Publish layer version"
         run: |
           aws lambda publish-layer-version \
-          --layer-name ${{ inputs.lambda_layer_name_qpdf }} \
-          --description "QPDF v${{ env.QPDF_VERSION }}" \
-          --content "S3Bucket=${{ inputs.s3_bucket_name }},S3Key=qpdfLayers/qpdf-v${{ env.QPDF_VERSION }}-layer.zip" \
+          --layer-name ${{ inputs.lambda_layer_name_pdfcpu }} \
+          --description "pdfcpu v${{ env.PDFCPU_VERSION }}" \
+          --content "S3Bucket=${{ inputs.s3_bucket_name }},S3Key=pdfcpuLayers/pdfcpu-v${{ env.PDFCPU_VERSION }}-layer.zip" \
           --compatible-architectures x86_64
 
   call-update-function-configuration:
@@ -333,7 +337,7 @@ jobs:
         node-modules-publish,
         fonts-publish,
         chromium-build,
-        qpdf-build,
+        pdfcpu-build,
       ]
     if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     with:
@@ -341,7 +345,7 @@ jobs:
       lambda_layer_name_node_modules: ${{ inputs.lambda_layer_name_node_modules }}
       lambda_layer_name_fonts: ${{ inputs.lambda_layer_name_fonts }}
       lambda_layer_name_chromium: ${{ inputs.lambda_layer_name_chromium }}
-      lambda_layer_name_qpdf: ${{ inputs.lambda_layer_name_qpdf }}
+      lambda_layer_name_pdfcpu: ${{ inputs.lambda_layer_name_pdfcpu }}
       s3_bucket_name: ${{ inputs.s3_bucket_name }}
       s3_file_path_function_code: ${{ inputs.s3_file_path_function_code }}
       artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
