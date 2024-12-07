@@ -309,7 +309,7 @@ jobs:
 
       - name: "Fetch pdfcpu"
         if: steps.check_same_version.outputs.EXISTS == 'false'
-        run: \
+        run: |
           wget "https://github.com/pdfcpu/pdfcpu/releases/download/v${{ env.PDFCPU_VERSION }}/pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.tar.xz"
           tar -xvf "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.tar.xz"
           mkdir bin/
