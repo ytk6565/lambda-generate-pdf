@@ -27,20 +27,14 @@ async function encryptPdf(
 ) {
   try {
     const args = [
-      "--encrypt",
-      '""', // 閲覧可能にするため、ユーザーパスワードは設定しない
+      "encrypt",
+      `--opw`,
       ownerPassword,
-      "256",
-      "--print=none",
-      "--modify=none",
-      "--extract=n",
-      "--annotate=n",
-      "--",
       inputPath,
       outputPath,
     ];
 
-    await promisifiedExecFile("qpdf", args);
+    await promisifiedExecFile("pdfcpu", args);
   } catch (error) {
     console.error("PDF暗号化中にエラーが発生しました:", error);
     throw new Error("PDF暗号化に失敗しました");
