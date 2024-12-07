@@ -59,6 +59,7 @@ export const handler: Handler = async (_event, _context, callback) => {
 
     callback(null, errorResponse(message));
   } finally {
+    browser.close();
     server.close();
   }
 };

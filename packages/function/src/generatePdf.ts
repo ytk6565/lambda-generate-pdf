@@ -83,7 +83,6 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
     // リソースのクリーンアップ
     await Promise.all([
       page.close(),
-      browser.close(),
       promises.unlink(OUTPUT_PDF_PATH).catch(() => {}),
       promises.unlink(OUTPUT_ENCRYPTED_PDF_PATH).catch(() => {}),
     ]);
