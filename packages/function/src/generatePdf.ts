@@ -24,15 +24,9 @@ async function encryptPdf(
   inputPath: string,
   outputPath: string,
   ownerPassword: string
-) {
+): Promise<void> {
   try {
-    const args = [
-      "encrypt",
-      `--opw`,
-      ownerPassword,
-      inputPath,
-      outputPath,
-    ];
+    const args = ["encrypt", `--opw`, ownerPassword, inputPath, outputPath];
 
     await promisifiedExecFile("pdfcpu", args);
   } catch (error) {
