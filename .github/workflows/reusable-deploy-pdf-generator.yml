@@ -24,6 +24,9 @@ on:
       s3_file_path_function_code:
         type: string
         required: true
+      cloudfront_distribution_id:
+        type: string
+        required: true
       env:
         type: string
         required: true
@@ -83,6 +86,12 @@ jobs:
       - name: "Build app"
         run: npm run build
         working-directory: "packages/app"
+      
+      - uses: ./.github/actions/deploy-and-clear-cache
+        with:
+          s3-sync-from: ./packages/app/.output/public
+          s3-sync-to: ${{ inputs.s3_bucket_name }}
+          cloudfront-distribution-id: ${{ inputs.cloudfront_distribution_id }}
 
       - name: "Setup Node.js for function"
         uses: actions/setup-node@v4
@@ -119,8 +128,8 @@ jobs:
 
       - name: "Prepare function code"
         run: |
-          mkdir packages/function/dist/.output
-          cp -r packages/app/.output/ packages/function/dist
+          mkdir packages/function/dist/.output/server
+          cp -r packages/app/.output/server/ packages/function/dist/.output/
 
       - name: "Upload artifact for function code"
         uses: actions/upload-artifact@v4

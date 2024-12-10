@@ -26,6 +26,7 @@ jobs:
       lambda_layer_name_fonts: "generate-pdf-fonts"
       lambda_layer_name_chromium: "generate-pdf-chromium"
       lambda_layer_name_pdfcpu: "generate-pdf-pdfcpu"
+      cloudfront_distribution_id: "E3ST8HBLMRR5DI"
       s3_bucket_name: "generate-pdf-layer"
       s3_file_path_function_code: "function-code.zip"
       env: "production"

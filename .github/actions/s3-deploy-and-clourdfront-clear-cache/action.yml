@@ -1,0 +1,27 @@
+name: "Deploy to S3 and invalidate CloudFront cache"
+
+description: "Deploy to S3 and invalidate CloudFront cache"
+
+inputs:
+  s3-sync-from:
+    required: true
+    type: string
+  s3-sync-to:
+    required: true
+    type: string
+  cloudfront-distribution-id:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Sync S3"
+      run: |
+        aws s3 sync ./${{ inputs.s3-sync-from }} s3://${{ inputs.s3-sync-to }} --exact-timestamps --delete
+      shell: bash
+
+    - name: "Create CloudFront invalidation"
+      run: |
+        aws cloudfront create-invalidation --distribution-id ${{ inputs.cloudfront-distribution-id }} --paths "/*"
+      shell: bash
