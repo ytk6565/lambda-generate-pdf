@@ -81,6 +81,21 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
       timeout: PAGE_NAVIGATION_TIMEOUT,
     });
 
+    page.on("pageerror", (error) => {
+      console.error("(Browser) pageerror: ", error.message);
+    });
+
+    page.on("error", (error) => {
+      console.error("(Browser) pageerror", error.message);
+    });
+
+    page.on("console", (msg) => {
+      console.log("(Browser) console type: ", msg.type());
+      console.log("(Browser) console text: ", msg.text());
+      for (let i = 0; i < msg.args().length; ++i)
+        console.log(`${i}: ${msg.args()[i]}`);
+    });
+
     // PDFを生成
     const pdf = await page.pdf({
       printBackground: true,

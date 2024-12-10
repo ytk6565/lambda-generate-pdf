@@ -32,6 +32,7 @@ export const createBrowser = async (): Promise<Browser> => {
     // @ts-expect-error
     headless: process.env.IS_LOCAL ? false : chromium.headless,
     ignoreHTTPSErrors: true,
+    dumpio: true,
   });
 
   return browser;
