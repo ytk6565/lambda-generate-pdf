@@ -87,7 +87,7 @@ jobs:
         run: npm run build
         working-directory: "packages/app"
       
-      - uses: ./.github/actions/deploy-and-clear-cache
+      - uses: ./.github/actions/s3-deploy-and-clourdfront-clear-cache
         with:
           s3-sync-from: ./packages/app/.output/public
           s3-sync-to: ${{ inputs.s3_bucket_name }}
