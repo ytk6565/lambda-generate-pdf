@@ -4,5 +4,8 @@ export default defineNuxtConfig({
   srcDir: "src/",
   nitro: {
     preset: "node",
+  },
+  app: {
+    cdnURL: process.env.CDN_URL || "",
   }
 })

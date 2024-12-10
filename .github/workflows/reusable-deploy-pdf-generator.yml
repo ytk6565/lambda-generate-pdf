@@ -33,6 +33,8 @@ on:
     secrets:
       AWS_ACCOUNT_ID:
         required: true
+      CLOUDFRONT_URL:
+        required: true
 
 permissions:
   id-token: write
@@ -91,6 +93,8 @@ jobs:
 
       - name: "Build app"
         run: npm run build
+        env:
+          CDN_URL: ${{ secrets.CLOUDFRONT_URL }}
         working-directory: "packages/app"
       
       - uses: ./.github/actions/s3-deploy-and-clourdfront-clear-cache

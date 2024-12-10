@@ -32,3 +32,4 @@ jobs:
       env: "production"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      CLOUDFRONT_URL: ${{ secrets.CLOUDFRONT_URL }}
