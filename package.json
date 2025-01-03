@@ -1,0 +1,14 @@
+{
+  "name": "@ytk6565/lambda-generate-pdf",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18.18.0",
+    "npm": ">=9.4.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "packageManager": "npm@9.8.1"
+}

@@ -1,5 +1,5 @@
 {
-  "name": "lambda-generate-pdf",
+  "name": "@ytk6565/lambda-generate-pdf-function",
   "version": "1.0.0",
   "description": "Lambda generate pdf",
   "main": "dist/index.js",
