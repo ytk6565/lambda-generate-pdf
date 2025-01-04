@@ -1,26 +1,26 @@
-import type { ExecException } from "node:child_process";
+import type { ExecaChildProcess } from "execa";
 
-import { exec } from "node:child_process";
+import { execaNode } from "execa";
+
+/**
+ * RegExp
+ */
+const REGEXP_LISTENING = /Listening on /;
 
 /**
  * Types
  */
 type CreateNuxtServerOptions = {
-  serverFilePath: string;
+  serverFilePath?: string;
+  timeout?: number;
 };
 
-type ExecCallback = (
-  error: ExecException | null,
-  stdout: string,
-  stderr: string,
-) => void;
-
 type NuxtServer = {
-  listen: (callback: ExecCallback) => void;
+  listen: () => Promise<void>;
   close: () => void;
 };
 
-type CreateNuxtServer = (options: CreateNuxtServerOptions) => NuxtServer;
+type CreateNuxtServer = (options?: CreateNuxtServerOptions) => NuxtServer;
 
 /**
  * Nuxtサーバーの生成
@@ -29,10 +29,11 @@ type CreateNuxtServer = (options: CreateNuxtServerOptions) => NuxtServer;
  */
 export const createNuxtServer: CreateNuxtServer = ({
   serverFilePath = ".output/server/index.mjs",
-}) => {
-  const command = `node ${serverFilePath}`;
+  timeout = 3000,
+} = {}) => {
+  const command = `${serverFilePath}`;
 
-  let execProcess: ReturnType<typeof exec> | undefined;
+  let execProcess: ExecaChildProcess | undefined;
 
   const close = () => {
     execProcess?.kill();
@@ -43,8 +44,35 @@ export const createNuxtServer: CreateNuxtServer = ({
   process.on("SIGQUIT", close);
 
   return {
-    listen: (callback) => {
-      execProcess = exec(command, callback);
+    listen: async () => {
+      execProcess = execaNode(command, {
+        cwd: process.env.IS_LOCAL ? "../app" : "",
+      });
+
+      execProcess?.stdout?.on("data", (data) => {
+        console.log(data.toString());
+      });
+
+      execProcess?.stderr?.on("data", (data) => {
+        console.error(data.toString());
+      });
+
+      return new Promise<void>((resolve, reject) => {
+        let resolved = false;
+
+        execProcess?.stdout?.on("data", (data) => {
+          if (REGEXP_LISTENING.test(data) && !resolved) {
+            resolved = true;
+            resolve();
+          }
+        });
+
+        setTimeout(() => {
+          if (!resolved) {
+            reject(new Error("Timeout"));
+          }
+        }, timeout);
+      });
     },
     close,
   };

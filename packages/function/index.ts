@@ -33,24 +33,13 @@ export const handler: Handler = async (_event, _context, callback) => {
           }
         : undefined,
   });
-  const server = createNuxtServer({
-    serverFilePath: process.env.IS_LOCAL
-      ? "../app/.output/server/index.mjs"
-      : ".output/server/index.mjs",
-  });
+  const server = createNuxtServer();
   const browser = await createBrowser();
 
   const generatePdf = generatePdfFactory(browser);
 
   try {
-    server.listen((error, stdout, stderr) => {
-      if (error) {
-        throw error;
-      }
-
-      console.log(`Nuxt server stdout: ${stdout}`);
-      console.error(`Nuxt server stderr: ${stderr}`);
-    });
+    await server.listen();
 
     const pdfBuffers = await generatePdf(REQUEST_URL);
 
@@ -58,7 +47,7 @@ export const handler: Handler = async (_event, _context, callback) => {
       s3Client,
       S3_BUCKET_NAME,
       S3_FILE_PATH,
-      pdfBuffers,
+      pdfBuffers
     );
 
     console.log(`PDF uploaded to S3 with key: ${S3_FILE_PATH}`);

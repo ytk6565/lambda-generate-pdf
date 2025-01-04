@@ -93,8 +93,8 @@ describe("pdf-generator", () => {
     test("サーバーの処理に失敗した場合、エラーが発生すること", async () => {
       expect.assertions(8);
 
-      createNuxtServerListenMock.mockImplementationOnce((callback) => {
-        callback(new Error("ワークフローが失敗しました"), "", "");
+      createNuxtServerListenMock.mockImplementationOnce(() => {
+        throw new Error("ワークフローが失敗しました")
       });
 
       await handler({}, createContextMock(), callbackMock);
