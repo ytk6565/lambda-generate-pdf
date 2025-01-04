@@ -35,5 +35,5 @@ jobs:
       - name: "Lint & Format for pdf-generator"
         run: npm run check:ci -w packages/function
 
-      # - name: "Unit tests for pdf-generator"
-      #   run: npm run test -w packages/function
+      - name: "Unit tests for pdf-generator"
+        run: npm run test -w packages/function

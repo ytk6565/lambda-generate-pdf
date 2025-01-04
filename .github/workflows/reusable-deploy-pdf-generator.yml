@@ -126,12 +126,6 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 1
-      
-      - uses: ./.github/actions/s3-deploy-and-clourdfront-clear-cache
-        with:
-          s3-sync-from: ./packages/app/.output/public
-          s3-sync-to: ${{ inputs.s3_bucket_name }}
-          cloudfront-distribution-id: ${{ inputs.cloudfront_distribution_id }}
 
   function-code-upload:
     uses: ./.github/workflows/reusable-upload-to-s3.yml
