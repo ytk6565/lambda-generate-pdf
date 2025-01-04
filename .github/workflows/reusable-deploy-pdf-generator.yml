@@ -80,47 +80,23 @@ jobs:
           aws-region: ap-northeast-1
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
 
-      - name: "Setup Node.js for app"
+      - name: "Setup Node.js"
         uses: actions/setup-node@v4
         with:
-          node-version: "18.16.1"
+          node-version: "18.18.0"
           cache: "npm"
-          cache-dependency-path: "packages/app/package-lock.json"
 
-      - name: "Install dependencies for app"
-        run: npm ci --only=prod
-        working-directory: "packages/app"
+      - name: "Install dependencies"
+        run: npm ci
 
       - name: "Build app"
-        run: npm run build
-        env:
-          CDN_URL: ${{ secrets.CLOUDFRONT_URL }}
-        working-directory: "packages/app"
+        run: npm run build -w packages/app
       
-      - uses: ./.github/actions/s3-deploy-and-clourdfront-clear-cache
-        with:
-          s3-sync-from: ./packages/app/.output/public
-          s3-sync-to: ${{ inputs.s3_bucket_name }}
-          cloudfront-distribution-id: ${{ inputs.cloudfront_distribution_id }}
-
-      - name: "Setup Node.js for function"
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18.16.1"
-          cache: "npm"
-          cache-dependency-path: "packages/function/package-lock.json"
-
-      - name: "Install dependencies for function build"
-        run: npm ci
-        working-directory: "packages/function"
-
       - name: "Build function"
-        run: npm run build
-        working-directory: "packages/function"
+        run: npm run build -w packages/function
 
       - name: "Install dependencies for deploy"
         run: npm ci --only=prod
-        working-directory: "packages/function"
 
       - name: "Prepare node_modules"
         run: |
@@ -149,6 +125,12 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 1
+      
+      - uses: ./.github/actions/s3-deploy-and-clourdfront-clear-cache
+        with:
+          s3-sync-from: ./packages/app/.output/public
+          s3-sync-to: ${{ inputs.s3_bucket_name }}
+          cloudfront-distribution-id: ${{ inputs.cloudfront_distribution_id }}
 
   function-code-upload:
     uses: ./.github/workflows/reusable-upload-to-s3.yml
