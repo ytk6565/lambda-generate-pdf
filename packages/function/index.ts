@@ -47,7 +47,7 @@ export const handler: Handler = async (_event, _context, callback) => {
       s3Client,
       S3_BUCKET_NAME,
       S3_FILE_PATH,
-      pdfBuffers
+      pdfBuffers,
     );
 
     console.log(`PDF uploaded to S3 with key: ${S3_FILE_PATH}`);
