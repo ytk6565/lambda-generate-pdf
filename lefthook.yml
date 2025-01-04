@@ -4,12 +4,12 @@ pre-push:
     typecheck:
       root: "packages/function/"
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx}"
-      run: npm run typecheck -w packages/function
+      run: npm run typecheck
     check:
       root: "packages/function/"
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: npm run check -w packages/function
+      run: npm run check
     test:
       root: "packages/function/"
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx}"
-      run: npm run test -w packages/function -- --run --silent
+      run: npm run test -- --run --silent
