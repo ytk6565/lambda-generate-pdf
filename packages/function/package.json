@@ -9,7 +9,8 @@
     "check:ci": "biome ci .",
     "test": "vitest",
     "prebuild": "rm -rf dist",
-    "build": "node esbuild.config.mjs"
+    "build": "node esbuild.config.mjs",
+    "dev": "node esbuild.config.mjs && dotenv -e local/.local.env dotenv -e local/.aws.env -e local/.chromium.env -- node local/run-generate-pdf/index.mjs"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +26,7 @@
     "@sparticuz/chromium": "^131.0.1",
     "@types/aws-lambda": "^8.10.146",
     "@types/uuid": "^10.0.0",
+    "dotenv-cli": "^8.0.0",
     "esbuild": "^0.24.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

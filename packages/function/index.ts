@@ -9,7 +9,8 @@ import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
 
 const S3_BUCKET_NAME = "generate-pdf-documents";
 const S3_FILE_PATH = "hello-world.pdf";
-const REQUEST_URL = "http://0.0.0.0:3000/document?message=Hello%20World";
+const PUPPETEER_BASE_URL = "http://localhost:3000";
+const REQUEST_URL = `${PUPPETEER_BASE_URL}/document?message=Hello%20World`;
 const UNKNOWN_ERROR_MESSAGE = "予期せぬエラーが発生しました";
 
 const errorResponse = (error: Error) => {
@@ -20,9 +21,22 @@ const errorResponse = (error: Error) => {
 };
 
 export const handler: Handler = async (_event, _context, callback) => {
-  const s3Client = new S3Client({ region: "ap-northeast-1" });
+  const s3Client = new S3Client({
+    region: "ap-northeast-1",
+    credentials:
+      process.env.IS_LOCAL &&
+      process.env.AWS_ACCESS_KEY_ID &&
+      process.env.AWS_SECRET_ACCESS_KEY
+        ? {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          }
+        : undefined,
+  });
   const server = createNuxtServer({
-    serverFilePath: ".output/server/index.mjs",
+    serverFilePath: process.env.IS_LOCAL
+      ? "../app/.output/server/index.mjs"
+      : ".output/server/index.mjs",
   });
   const browser = await createBrowser();
 
@@ -44,7 +58,7 @@ export const handler: Handler = async (_event, _context, callback) => {
       s3Client,
       S3_BUCKET_NAME,
       S3_FILE_PATH,
-      pdfBuffers,
+      pdfBuffers
     );
 
     console.log(`PDF uploaded to S3 with key: ${S3_FILE_PATH}`);

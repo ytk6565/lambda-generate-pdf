@@ -22,8 +22,14 @@ type Metadata = {
 const PAGE_NAVIGATION_TIMEOUT = 3000; // 3秒
 const PDF_GENERATION_TIMEOUT = 10000; // 10秒
 
-const outputPdfPath = join(tmpdir(), "output.pdf");
-const outputEncryptedPdfPath = join(tmpdir(), "output-encrypted.pdf");
+const outputPdfPath =
+  process.env.IS_LOCAL && process.env.OUTPUT_PDF_PATH
+    ? process.env.OUTPUT_PDF_PATH
+    : join(tmpdir(), "output.pdf");
+const outputEncryptedPdfPath =
+  process.env.IS_LOCAL && process.env.OUTPUT_ENCRYPTED_PDF_PATH
+    ? process.env.OUTPUT_ENCRYPTED_PDF_PATH
+    : join(tmpdir(), "output-encrypted.pdf");
 
 const promisifiedExecFile = promisify(execFile);
 
@@ -133,8 +139,12 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
     // リソースのクリーンアップ
     await Promise.all([
       page.close(),
-      promises.unlink(outputPdfPath).catch(() => {}),
-      promises.unlink(outputEncryptedPdfPath).catch(() => {}),
+      ...(process.env.IS_LOCAL
+        ? []
+        : [
+            promises.unlink(outputPdfPath).catch(() => {}),
+            promises.unlink(outputEncryptedPdfPath).catch(() => {}),
+          ]),
     ]);
   }
 };

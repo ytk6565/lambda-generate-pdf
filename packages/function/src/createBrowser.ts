@@ -28,7 +28,9 @@ export const createBrowser = async (): Promise<Browser> => {
           "--font-render-hinting=none",
         ],
     defaultViewport: chromium.defaultViewport,
-    executablePath: process.env.IS_LOCAL ? "" : await chromium.executablePath(),
+    executablePath: process.env.IS_LOCAL
+      ? process.env.PUPPETEER_EXECUTABLE_PATH
+      : await chromium.executablePath(),
     // @ts-expect-error
     headless: process.env.IS_LOCAL ? false : chromium.headless,
     ignoreHTTPSErrors: true,

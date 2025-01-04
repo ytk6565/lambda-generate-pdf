@@ -34,12 +34,18 @@ export const createNuxtServer: CreateNuxtServer = ({
 
   let execProcess: ReturnType<typeof exec> | undefined;
 
+  const close = () => {
+    execProcess?.kill();
+  };
+
+  process.on("SIGINT", close);
+  process.on("SIGTERM", close);
+  process.on("SIGQUIT", close);
+
   return {
     listen: (callback) => {
       execProcess = exec(command, callback);
     },
-    close: () => {
-      execProcess?.kill();
-    },
+    close,
   };
 };

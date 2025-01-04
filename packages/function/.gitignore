@@ -1,2 +1,6 @@
 dist/
 .output/
+local/.aws.env
+local/.chromium.env
+output.pdf
+output-encrypted.pdf
