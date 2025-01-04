@@ -1,4 +1,4 @@
-import type { ResultPromise } from "execa";
+import type { ExecaChildProcess } from "execa";
 
 import { execaNode } from "execa";
 
@@ -33,7 +33,7 @@ export const createNuxtServer: CreateNuxtServer = ({
 } = {}) => {
   const command = `${serverFilePath}`;
 
-  let execProcess: ResultPromise | undefined;
+  let execProcess: ExecaChildProcess | undefined;
 
   const close = () => {
     execProcess?.kill();
