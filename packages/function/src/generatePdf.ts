@@ -1,9 +1,9 @@
 import type { Browser } from "puppeteer-core";
 
 import { execFile } from "node:child_process";
+import { promises } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { promises } from "node:fs";
 import { promisify } from "node:util";
 
 import { PDFDocument } from "pdf-lib";
@@ -29,7 +29,7 @@ const promisifiedExecFile = promisify(execFile);
 
 const setMetadata = async (
   buffer: Buffer,
-  metadata: Metadata
+  metadata: Metadata,
 ): Promise<Uint8Array> => {
   const pdfDoc = await PDFDocument.load(buffer);
 
@@ -54,7 +54,7 @@ const setMetadata = async (
 async function encryptPdf(
   inputPath: string,
   outputPath: string,
-  ownerPassword: string
+  ownerPassword: string,
 ): Promise<void> {
   try {
     const args = ["encrypt", `--opw`, ownerPassword, inputPath, outputPath];
