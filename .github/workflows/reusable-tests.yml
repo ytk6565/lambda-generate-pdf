@@ -28,16 +28,12 @@ jobs:
 
       - name: "Install dependencies for pdf-generator"
         run: npm ci
-        working-directory: "packages/function"
 
       - name: "Typecheck for pdf-generator"
-        run: npm run typecheck
-        working-directory: "packages/function"
+        run: npm run typecheck -w packages/function
 
       - name: "Lint & Format for pdf-generator"
-        run: npm run check:ci
-        working-directory: "packages/function"
+        run: npm run check:ci -w packages/function
 
       # - name: "Unit tests for pdf-generator"
-      #   run: npm run test
-      #   working-directory: "packages/function"
+      #   run: npm run test -w packages/function
