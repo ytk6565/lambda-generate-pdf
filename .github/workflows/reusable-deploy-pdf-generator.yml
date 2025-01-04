@@ -96,12 +96,13 @@ jobs:
         run: npm run build -w packages/function
 
       - name: "Install dependencies for deploy"
-        run: npm ci --only=prod
+        run: npm ci -w packages/function --only=prod
 
       - name: "Prepare node_modules"
         run: |
           mkdir -p ./packages/function/dependencies/nodejs
-          cp -r ./packages/function/node_modules ./packages/function/dependencies/nodejs
+          cp -r ./node_modules ./packages/function/dependencies/nodejs
+          rm -rf ./packages/function/dependencies/nodejs/node_modules/@ytk6565
 
       - name: "Upload artifact for node_modules"
         uses: actions/upload-artifact@v4
