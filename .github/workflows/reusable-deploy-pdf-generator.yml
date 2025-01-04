@@ -115,8 +115,8 @@ jobs:
 
       - name: "Prepare function code"
         run: |
-          mkdir -p packages/function/dist/.output/server
-          cp -r packages/app/.output/server/ packages/function/dist/.output/
+          mkdir -p packages/function/dist/.output
+          cp -r packages/app/.output/ packages/function/dist/
 
       - name: "Upload artifact for function code"
         uses: actions/upload-artifact@v4
