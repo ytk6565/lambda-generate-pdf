@@ -59,6 +59,10 @@ jobs:
         with:
           filters: |
             targets:
+              - ".node-version"
+              - ".npmrc"
+              - "package.json"
+              - "package-lock.json"
               - "packages/app/**"
               - "packages/function/**"
               - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
