@@ -57,21 +57,17 @@ export const createNuxtServer: CreateNuxtServer = ({
         console.error(data.toString());
       });
 
-      return new Promise<void>((resolve, reject) => {
-        let resolved = false;
+      return await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(new Error("Timeout"));
+        }, timeout);
 
         execProcess?.stdout?.on("data", (data) => {
-          if (REGEXP_LISTENING.test(data) && !resolved) {
-            resolved = true;
+          if (REGEXP_LISTENING.test(data.toString())) {
+            clearTimeout(timer);
             resolve();
           }
         });
-
-        setTimeout(() => {
-          if (!resolved) {
-            reject(new Error("Timeout"));
-          }
-        }, timeout);
       });
     },
     close,
