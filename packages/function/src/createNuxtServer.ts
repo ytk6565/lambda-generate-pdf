@@ -39,10 +39,6 @@ export const createNuxtServer: CreateNuxtServer = ({
     execProcess?.kill();
   };
 
-  process.on("SIGINT", close);
-  process.on("SIGTERM", close);
-  process.on("SIGQUIT", close);
-
   return {
     listen: async () => {
       execProcess = execaNode(command, {
@@ -56,6 +52,10 @@ export const createNuxtServer: CreateNuxtServer = ({
       execProcess?.stderr?.on("data", (data) => {
         console.error(data.toString());
       });
+
+      execProcess?.on("SIGINT", close);
+      execProcess?.on("SIGTERM", close);
+      execProcess?.on("SIGQUIT", close);
 
       return await new Promise<void>((resolve, reject) => {
         const timer = setTimeout(() => {
