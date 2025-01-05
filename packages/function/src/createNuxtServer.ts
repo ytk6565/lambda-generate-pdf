@@ -41,33 +41,37 @@ export const createNuxtServer: CreateNuxtServer = ({
 
   return {
     listen: async () => {
-      execProcess = execaNode(command, {
-        cwd: process.env.IS_LOCAL ? "../app" : "",
-      });
-
-      execProcess?.stdout?.on("data", (data) => {
-        console.log(data.toString());
-      });
-
-      execProcess?.stderr?.on("data", (data) => {
-        console.error(data.toString());
-      });
-
-      execProcess?.on("SIGINT", close);
-      execProcess?.on("SIGTERM", close);
-      execProcess?.on("SIGQUIT", close);
-
       return await new Promise<void>((resolve, reject) => {
         const timer = setTimeout(() => {
           reject(new Error("Timeout"));
         }, timeout);
 
-        execProcess?.stdout?.on("data", (data) => {
-          if (REGEXP_LISTENING.test(data.toString())) {
-            clearTimeout(timer);
-            resolve();
-          }
-        });
+        try {
+          execProcess = execaNode(command, {
+            cwd: process.env.IS_LOCAL ? "../app" : "",
+          });
+
+          execProcess?.stdout?.on("data", (data) => {
+            console.log(data.toString());
+          });
+
+          execProcess?.stderr?.on("data", (data) => {
+            console.error(data.toString());
+          });
+
+          execProcess?.on("SIGINT", close);
+          execProcess?.on("SIGTERM", close);
+          execProcess?.on("SIGQUIT", close);
+
+          execProcess?.stdout?.on("data", (data) => {
+            if (REGEXP_LISTENING.test(data.toString())) {
+              clearTimeout(timer);
+              resolve();
+            }
+          });
+        } catch (error) {
+          reject(error);
+        }
       });
     },
     close,
