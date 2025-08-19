@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "main"
+      - "feature/docker"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
