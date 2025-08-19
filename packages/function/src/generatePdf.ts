@@ -1,4 +1,4 @@
-import type { Browser } from "puppeteer-core";
+import type { Browser } from "playwright";
 
 import { execFile } from "node:child_process";
 import { promises } from "node:fs";
@@ -20,7 +20,6 @@ type Metadata = {
 };
 
 const PAGE_NAVIGATION_TIMEOUT = 3000; // 3秒
-const PDF_GENERATION_TIMEOUT = 10000; // 10秒
 
 const outputPdfPath =
   process.env.IS_LOCAL && process.env.OUTPUT_PDF_PATH
@@ -83,16 +82,12 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
 
   try {
     await page.goto(url, {
-      waitUntil: "networkidle0",
+      waitUntil: "domcontentloaded",
       timeout: PAGE_NAVIGATION_TIMEOUT,
     });
 
     page.on("pageerror", (error) => {
       console.error("(Browser) pageerror: ", error.message);
-    });
-
-    page.on("error", (error) => {
-      console.error("(Browser) pageerror", error.message);
     });
 
     page.on("console", (msg) => {
@@ -105,7 +100,6 @@ export const generatePdfFactory = (browser: Browser) => async (url: string) => {
     // PDFを生成
     const pdf = await page.pdf({
       printBackground: true,
-      timeout: PDF_GENERATION_TIMEOUT,
     });
 
     // PDFメタデータを設定

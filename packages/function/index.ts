@@ -9,8 +9,8 @@ import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
 
 const S3_BUCKET_NAME = "generate-pdf-documents";
 const S3_FILE_PATH = "hello-world.pdf";
-const PUPPETEER_BASE_URL = "http://localhost:3000";
-const REQUEST_URL = `${PUPPETEER_BASE_URL}/document?message=Hello%20World`;
+const PLAYWRIGHT_BASE_URL = "http://localhost:3000";
+const REQUEST_URL = `${PLAYWRIGHT_BASE_URL}/document?message=Hello%20World`;
 const UNKNOWN_ERROR_MESSAGE = "予期せぬエラーが発生しました";
 
 const errorResponse = (error: Error) => {

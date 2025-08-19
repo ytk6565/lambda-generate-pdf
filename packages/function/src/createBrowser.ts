@@ -1,20 +1,15 @@
-import type { Browser } from "puppeteer-core";
+import type { Browser } from "playwright";
 
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+import { chromium } from "playwright";
 
 /**
  * ブラウザの生成
  * @returns ブラウザ
  */
 export const createBrowser = async (): Promise<Browser> => {
-  // Chromiumのグラフィックモードの設定を無効にする
-  chromium.setGraphicsMode = false;
-
-  // Puppeteerを使用してブラウザをランチするための設定
-  const browser = await puppeteer.launch({
+  const browser = await chromium.launch({
     args: process.env.IS_LOCAL
-      ? puppeteer.defaultArgs()
+      ? [] // chromium.defaultArgs()
       : [
           "--disable-gpu",
           "--disable-dev-shm-usage",
@@ -27,14 +22,9 @@ export const createBrowser = async (): Promise<Browser> => {
           "--proxy-bypass-list=*",
           "--font-render-hinting=none",
         ],
-    defaultViewport: chromium.defaultViewport,
-    executablePath: process.env.IS_LOCAL
-      ? process.env.PUPPETEER_EXECUTABLE_PATH
-      : await chromium.executablePath(),
+    headless: process.env.IS_LOCAL ? false : true,
     // @ts-expect-error
-    headless: process.env.IS_LOCAL ? false : chromium.headless,
     ignoreHTTPSErrors: true,
-    dumpio: true,
   });
 
   return browser;
