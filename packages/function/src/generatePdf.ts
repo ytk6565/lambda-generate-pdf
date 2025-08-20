@@ -67,16 +67,14 @@ async function encryptPdf(
     // Lambda でホームディレクトリの書き込み権限がないので、書き込み権限がある tmpdir をホームディレクトリに設定することでファイルの書き込み権限エラーに対応する
     const tmp = tmpdir();
     const xdgConfigHome = join(tmp, ".config");
-    const pdfcpuConfigDir = join(xdgConfigHome, "pdfcpu");
 
-    await promises.mkdir(pdfcpuConfigDir, { recursive: true });
+    await promises.mkdir(xdgConfigHome, { recursive: true });
 
     await promisifiedExecFile("pdfcpu", args, {
       env: {
         ...process.env,
         HOME: tmp,
         XDG_CONFIG_HOME: xdgConfigHome,
-        PDFCPU_CONFIG_DIR: pdfcpuConfigDir,
       },
     });
   } catch (error) {
