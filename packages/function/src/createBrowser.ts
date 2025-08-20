@@ -22,7 +22,7 @@ export const createBrowser = async (): Promise<Browser> => {
           "--proxy-bypass-list=*",
           "--font-render-hinting=none",
         ],
-    headless: process.env.IS_LOCAL ? false : true,
+    headless: !process.env.IS_LOCAL,
     // @ts-expect-error
     ignoreHTTPSErrors: true,
   });
