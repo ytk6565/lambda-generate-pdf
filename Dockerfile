@@ -76,6 +76,9 @@ ARG FUNCTION_DIR
 # 関数のルートディレクトリを設定
 WORKDIR ${FUNCTION_DIR}
 
+RUN mkdir -p /usr/share/fonts
+COPY ./packages/function/fonts/* /usr/share/fonts/
+
 # ビルド済みの依存関係をコピー
 COPY --from=build-image ${BUILD_DIR}/packages/app/.output/ ${FUNCTION_DIR}/.output/
 COPY --from=build-image ${BUILD_DIR}/packages/function/dist/index.mjs ${FUNCTION_DIR}

@@ -9,6 +9,7 @@ const route = useRoute();
 <template>
   <div>
     <p>{{ route.query.message }} from query.</p>
+    <p>こんにちは。日本語のテストです。</p>
 
     <h2>Public</h2>
     <img src="/public.png" alt="placeholder" width="120" height="80" />
