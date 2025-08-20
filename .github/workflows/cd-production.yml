@@ -22,8 +22,8 @@ jobs:
   call-deploy:
     uses: ./.github/workflows/reusable-deploy-pdf-generator.yml
     with:
-      lambda_function_name: "generate-pdf"
-      ecr-repository: "pdf-generator/lambda-function"
+      lambda_function_name: "generate-pdf-docker"
+      ecr-repository: "pdf-generator-repo"
       env: "production"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
