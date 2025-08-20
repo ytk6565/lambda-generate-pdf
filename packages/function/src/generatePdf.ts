@@ -64,7 +64,7 @@ async function encryptPdf(
   try {
     const args = ["encrypt", "--opw", ownerPassword, inputPath, outputPath];
 
-    // Ensure pdfcpu uses a writable config directory on Lambda
+    // Lambda でホームディレクトリの書き込み権限がないので、書き込み権限がある tmpdir をホームディレクトリに設定することでファイルの書き込み権限エラーに対応する
     const tmp = tmpdir();
     const xdgConfigHome = join(tmp, ".config");
     const pdfcpuConfigDir = join(xdgConfigHome, "pdfcpu");
