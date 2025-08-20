@@ -25,6 +25,7 @@ permissions:
 env:
   AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
   ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   deploy:
@@ -59,14 +60,14 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          provenance: false
 
       # - name: Build, tag, and push image to Amazon ECR
       #   id: build-image
       #   env:
       #     APP_ENV_ARG: ${{ inputs.env }}
       #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     IMAGE_TAG: ${{ github.sha }}
       #   run: |
       #     # Build a docker container and
       #     # push it to ECR so that it can
