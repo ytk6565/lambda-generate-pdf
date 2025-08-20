@@ -2,7 +2,6 @@
 
 ARG BUILD_DIR="/build"
 ARG LIBRARY_DIR="/lib"
-ARG FUNCTION_DIR="/function"
 
 # ------------------------------------------------------------
 # ビルド
@@ -71,18 +70,14 @@ ENV NPM_CONFIG_CACHE=/tmp/.npm
 # このステージのビルドにグローバル引数を含める
 ARG BUILD_DIR
 ARG LIBRARY_DIR
-ARG FUNCTION_DIR
-
-# 関数のルートディレクトリを設定
-WORKDIR ${FUNCTION_DIR}
 
 # ビルド済みの依存関係をコピー
-COPY --from=build-image ${BUILD_DIR}/packages/app/.output/ ${FUNCTION_DIR}/.output/
-COPY --from=build-image ${BUILD_DIR}/packages/function/dist/index.mjs ${FUNCTION_DIR}
+COPY --from=build-image ${BUILD_DIR}/packages/app/.output/ ./.output/
+COPY --from=build-image ${BUILD_DIR}/packages/function/dist/index.mjs .
 COPY --from=library-image ${LIBRARY_DIR}/bin/ /bin/
-COPY --from=library-image ${LIBRARY_DIR}/node_modules/ ${FUNCTION_DIR}/node_modules/
-COPY --from=library-image ${LIBRARY_DIR}/package.json ${FUNCTION_DIR}
-COPY --from=library-image ${LIBRARY_DIR}/package-lock.json ${FUNCTION_DIR}
+COPY --from=library-image ${LIBRARY_DIR}/node_modules/ ./node_modules/
+COPY --from=library-image ${LIBRARY_DIR}/package.json .
+COPY --from=library-image ${LIBRARY_DIR}/package-lock.json .
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/pw-browsers
 RUN mkdir /pw-browsers
