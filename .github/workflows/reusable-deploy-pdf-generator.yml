@@ -6,25 +6,7 @@ on:
       lambda_function_name:
         type: string
         required: true
-      lambda_layer_name_node_modules:
-        type: string
-        required: true
-      lambda_layer_name_fonts:
-        type: string
-        required: true
-      lambda_layer_name_chromium:
-        type: string
-        required: true
-      lambda_layer_name_pdfcpu:
-        type: string
-        required: true
-      s3_bucket_name:
-        type: string
-        required: true
-      s3_file_path_function_code:
-        type: string
-        required: true
-      cloudfront_distribution_id:
+      ecr-repository:
         type: string
         required: true
       env:
@@ -42,37 +24,10 @@ permissions:
 
 env:
   AWS_ROLE_ARN: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE_NAME }}"
-  CHROMIUM_VERSION: "131.0.1"
-  PDFCPU_VERSION: "0.9.1"
+  ECR_REPOSITORY: ${{ inputs.ecr-repository }}
 
 jobs:
-  function-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      exists: ${{ steps.filter.outputs.targets }}
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            targets:
-              - ".node-version"
-              - ".npmrc"
-              - "package.json"
-              - "package-lock.json"
-              - "packages/app/**"
-              - "packages/function/**"
-              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
-              - ".github/workflows/reusable-deploy-pdf-generator.yml"
-              - ".github/workflows/reusable-publish-lambda-layer.yml"
-              - ".github/workflows/reusable-update-function-configuration.yml"
-
-  function-build:
-    needs: function-changes
-    if: ${{ needs.function-changes.outputs.exists == 'true' }}
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -84,270 +39,36 @@ jobs:
           aws-region: ap-northeast-1
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
 
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v4
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
         with:
-          node-version: "18.18.0"
-          cache: "npm"
+          platforms: linux/amd64
 
-      - name: "Install dependencies"
-        run: npm ci
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: "Build app"
-        run: npm run build -w packages/app
-      
-      - name: "Build function"
-        run: npm run build -w packages/function
-
-      - name: "Install dependencies for deploy"
-        run: npm ci -w packages/function --only=prod
-
-      - name: "Prepare node_modules"
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          APP_ENV_ARG: ${{ inputs.env }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          mkdir -p ./packages/function/dependencies/nodejs
-          cp -r ./node_modules ./packages/function/dependencies/nodejs
-          rm -rf ./packages/function/dependencies/nodejs/node_modules/@ytk6565
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg APP_ENV_ARG=$APP_ENV_ARG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: "Upload artifact for node_modules"
-        uses: actions/upload-artifact@v4
-        with:
-          name: generate-pdf-node-modules--${{ inputs.env }}
-          path: ./packages/function/dependencies
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 1
-
-      - name: "Prepare function code"
+      - name: Deploy to Lambda
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          mkdir -p packages/function/dist/.output
-          cp -r packages/app/.output/ packages/function/dist/
-
-      - name: "Upload artifact for function code"
-        uses: actions/upload-artifact@v4
-        with:
-          name: "generate-pdf-function-code--${{ inputs.env }}"
-          path: ./packages/function/dist
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 1
-
-  function-code-upload:
-    uses: ./.github/workflows/reusable-upload-to-s3.yml
-    needs: function-build
-    with:
-      artifact_name: "generate-pdf-function-code--${{ inputs.env }}"
-      s3_bucket_name: ${{ inputs.s3_bucket_name }}
-      s3_file_path: ${{ inputs.s3_file_path_function_code }}
-    secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-
-  node-modules-publish:
-    uses: ./.github/workflows/reusable-publish-lambda-layer.yml
-    needs: function-build
-    with:
-      artifact_name: "generate-pdf-node-modules--${{ inputs.env }}"
-      s3_bucket_name: ${{ inputs.s3_bucket_name }}
-      s3_file_path: "node_modules.zip"
-      lambda_layer_name: ${{ inputs.lambda_layer_name_node_modules }}
-      lambda_layer_description: "Node.js dependencies for Lambda function"
-    secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-
-  fonts-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      exists: ${{ steps.filter.outputs.targets }}
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            targets:
-              - "packages/function/fonts/**"
-              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
-              - ".github/workflows/reusable-deploy-pdf-generator.yml"
-              - ".github/workflows/reusable-publish-lambda-layer.yml"
-              - ".github/workflows/reusable-update-function-configuration.yml"
-
-  fonts-build:
-    needs: fonts-changes
-    if: ${{ needs.fonts-changes.outputs.exists == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Prepare"
-        run: |
-          mkdir -p ./packages/function/dist/fonts
-          cp -r ./packages/function/fonts ./packages/function/dist
-
-      - name: "Upload artifact"
-        uses: actions/upload-artifact@v4
-        with:
-          name: "generate-pdf-fonts--${{ inputs.env }}"
-          path: ./packages/function/dist
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 1
-
-  fonts-publish:
-    uses: ./.github/workflows/reusable-publish-lambda-layer.yml
-    needs: fonts-build
-    with:
-      artifact_name: "generate-pdf-fonts--${{ inputs.env }}"
-      s3_bucket_name: ${{ inputs.s3_bucket_name }}
-      s3_file_path: "fonts.zip"
-      lambda_layer_name: ${{ inputs.lambda_layer_name_fonts }}
-      lambda_layer_description: "Fonts for generate-pdf Lambda function"
-    secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-
-  chromium-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      exists: ${{ steps.filter.outputs.targets }}
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            targets:
-              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
-              - ".github/workflows/reusable-deploy-pdf-generator.yml"
-              - ".github/workflows/reusable-update-function-configuration.yml"
-
-  chromium-build:
-    needs: chromium-changes
-    if: ${{ needs.chromium-changes.outputs.exists == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ap-northeast-1
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-
-      - name: "Check if same version Chromium exists"
-        id: check_same_version
-        run: |
-          if aws s3 ls "s3://${{ inputs.s3_bucket_name }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" > /dev/null 2>&1; then
-            EXISTS="true"
-          else
-            EXISTS="false"
-          fi
-          echo "EXISTS=${EXISTS}" >> $GITHUB_OUTPUT
-
-      - name: "Fetch Chromium"
-        if: steps.check_same_version.outputs.EXISTS == 'false'
-        run: |
-          wget "https://github.com/Sparticuz/chromium/releases/download/v${{ env.CHROMIUM_VERSION }}/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
-
-      - name: "Upload to S3"
-        if: steps.check_same_version.outputs.EXISTS == 'false'
-        run: |
-          aws s3 cp "chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" "s3://${{ inputs.s3_bucket_name }}/chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip"
-
-      - name: "Publish layer version"
-        run: |
-          aws lambda publish-layer-version \
-          --layer-name ${{ inputs.lambda_layer_name_chromium }} \
-          --description "Chromium v${{ env.CHROMIUM_VERSION }}" \
-          --content "S3Bucket=${{ inputs.s3_bucket_name }},S3Key=chromiumLayers/chromium-v${{ env.CHROMIUM_VERSION }}-layer.zip" \
-          --compatible-runtimes nodejs \
-          --compatible-architectures x86_64
-
-  pdfcpu-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      exists: ${{ steps.filter.outputs.targets }}
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            targets:
-              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
-              - ".github/workflows/reusable-deploy-pdf-generator.yml"
-              - ".github/workflows/reusable-update-function-configuration.yml"
-
-  pdfcpu-build:
-    needs: pdfcpu-changes
-    if: ${{ needs.pdfcpu-changes.outputs.exists == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ap-northeast-1
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-
-      - name: "Check if same version pdfcpu exists"
-        id: check_same_version
-        run: |
-          if aws s3 ls "s3://${{ inputs.s3_bucket_name }}/pdfcpuLayers/pdfcpu-v${{ env.CHROMIUM_VERSION }}-layer.zip" > /dev/null 2>&1; then
-            EXISTS="true"
-          else
-            EXISTS="false"
-          fi
-          echo "EXISTS=${EXISTS}" >> $GITHUB_OUTPUT
-
-      - name: "Fetch pdfcpu"
-        if: steps.check_same_version.outputs.EXISTS == 'false'
-        run: |
-          wget "https://github.com/pdfcpu/pdfcpu/releases/download/v${{ env.PDFCPU_VERSION }}/pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.tar.xz"
-          tar -xvf "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.tar.xz"
-          mkdir bin/
-          mv "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64/pdfcpu" bin/
-          zip -r "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.zip" bin/
-
-      - name: "Upload to S3"
-        if: steps.check_same_version.outputs.EXISTS == 'false'
-        run: |
-          aws s3 cp "pdfcpu_${{ env.PDFCPU_VERSION }}_Linux_x86_64.zip" "s3://${{ inputs.s3_bucket_name }}/pdfcpuLayers/pdfcpu-v${{ env.PDFCPU_VERSION }}-layer.zip"
-
-      - name: "Publish layer version"
-        run: |
-          aws lambda publish-layer-version \
-          --layer-name ${{ inputs.lambda_layer_name_pdfcpu }} \
-          --description "pdfcpu v${{ env.PDFCPU_VERSION }}" \
-          --content "S3Bucket=${{ inputs.s3_bucket_name }},S3Key=pdfcpuLayers/pdfcpu-v${{ env.PDFCPU_VERSION }}-layer.zip" \
-          --compatible-architectures x86_64
-
-  call-update-function-configuration:
-    uses: ./.github/workflows/reusable-update-function-configuration.yml
-    needs:
-      [
-        function-code-upload,
-        node-modules-publish,
-        fonts-publish,
-        chromium-build,
-        pdfcpu-build,
-      ]
-    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
-    with:
-      lambda_function_name: ${{ inputs.lambda_function_name }}
-      lambda_layer_name_node_modules: ${{ inputs.lambda_layer_name_node_modules }}
-      lambda_layer_name_fonts: ${{ inputs.lambda_layer_name_fonts }}
-      lambda_layer_name_chromium: ${{ inputs.lambda_layer_name_chromium }}
-      lambda_layer_name_pdfcpu: ${{ inputs.lambda_layer_name_pdfcpu }}
-      s3_bucket_name: ${{ inputs.s3_bucket_name }}
-      s3_file_path_function_code: ${{ inputs.s3_file_path_function_code }}
-      artifact_name_function_code: "generate-pdf-function-code--${{ inputs.env }}"
-    secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          aws lambda update-function-code --function-name ${{ inputs.lambda_function_name }} --image-uri $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          # https://docs.aws.amazon.com/cli/latest/reference/lambda/wait/#cli-aws-lambda-wait
+          aws lambda wait function-updated --function-name ${{ inputs.lambda_function_name }}

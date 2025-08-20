@@ -23,13 +23,7 @@ jobs:
     uses: ./.github/workflows/reusable-deploy-pdf-generator.yml
     with:
       lambda_function_name: "generate-pdf"
-      lambda_layer_name_node_modules: "generate-pdf-node-modules"
-      lambda_layer_name_fonts: "generate-pdf-fonts"
-      lambda_layer_name_chromium: "generate-pdf-chromium"
-      lambda_layer_name_pdfcpu: "generate-pdf-pdfcpu"
-      cloudfront_distribution_id: "E3ST8HBLMRR5DI"
-      s3_bucket_name: "generate-pdf-layer"
-      s3_file_path_function_code: "function-code.zip"
+      ecr-repository: "pdf-generator/lambda-function"
       env: "production"
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
