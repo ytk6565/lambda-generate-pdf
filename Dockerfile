@@ -84,6 +84,9 @@ COPY --from=library-image ${LIBRARY_DIR}/node_modules/ ${FUNCTION_DIR}/node_modu
 COPY --from=library-image ${LIBRARY_DIR}/package.json ${FUNCTION_DIR}
 COPY --from=library-image ${LIBRARY_DIR}/package-lock.json ${FUNCTION_DIR}
 
+ENV PLAYWRIGHT_BROWSERS_PATH=/pw-browsers
+RUN mkdir /pw-browsers
+
 # playwright をインストール
 RUN npx -y playwright install --with-deps chromium
 
