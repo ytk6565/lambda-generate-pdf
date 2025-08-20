@@ -64,7 +64,21 @@ async function encryptPdf(
   try {
     const args = ["encrypt", "--opw", ownerPassword, inputPath, outputPath];
 
-    await promisifiedExecFile("pdfcpu", args);
+    // Ensure pdfcpu uses a writable config directory on Lambda
+    const tmp = tmpdir();
+    const xdgConfigHome = join(tmp, ".config");
+    const pdfcpuConfigDir = join(xdgConfigHome, "pdfcpu");
+
+    await promises.mkdir(pdfcpuConfigDir, { recursive: true });
+
+    await promisifiedExecFile("pdfcpu", args, {
+      env: {
+        ...process.env,
+        HOME: tmp,
+        XDG_CONFIG_HOME: xdgConfigHome,
+        PDFCPU_CONFIG_DIR: pdfcpuConfigDir,
+      },
+    });
   } catch (error) {
     console.error("PDF暗号化中にエラーが発生しました:", error);
     throw new Error("PDF暗号化に失敗しました");
