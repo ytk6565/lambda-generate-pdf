@@ -16,10 +16,8 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "execa": "8.0.1",
     "pdf-lib": "^1.17.1",
-    "puppeteer-core": "^21.6.0",
-    "uuid": "^10.0.0"
+    "puppeteer-core": "^21.6.0"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.701.0",
