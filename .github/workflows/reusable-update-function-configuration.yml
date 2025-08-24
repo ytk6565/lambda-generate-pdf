@@ -6,9 +6,6 @@ on:
       lambda_function_name:
         type: string
         required: true
-      lambda_layer_name_node_modules:
-        type: string
-        required: true
       lambda_layer_name_fonts:
         type: string
         required: true
@@ -54,12 +51,6 @@ jobs:
           aws-region: ap-northeast-1
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
 
-      - name: "Get Lambda Layer ARN suffix for node_modules"
-        id: function_layer_arn_suffix
-        uses: ./.github/actions/get-lambda-layer-arn-suffix
-        with:
-          AWS_LAMBDA_LAYER_NAME: ${{ inputs.lambda_layer_name_node_modules }}
-
       - name: "Get Lambda Layer ARN suffix for fonts"
         id: fonts_layer_arn_suffix
         uses: ./.github/actions/get-lambda-layer-arn-suffix
@@ -102,7 +93,6 @@ jobs:
           aws lambda update-function-configuration \
           --function-name ${{ inputs.lambda_function_name }} \
           --layers \
-          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.function_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.chromium_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.pdfcpu_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}

@@ -3,14 +3,13 @@ import type { Handler } from "aws-lambda";
 import { S3Client } from "@aws-sdk/client-s3";
 
 import { createBrowser } from "./src/createBrowser";
-import { createNuxtServer } from "./src/createNuxtServer";
 import { generatePdfFactory } from "./src/generatePdf";
 import { uploadResultFilesToS3 } from "./src/uploadResultFilesToS3";
 
 const S3_BUCKET_NAME = "generate-pdf-documents";
 const S3_FILE_PATH = "hello-world.pdf";
-const PUPPETEER_BASE_URL = "http://localhost:3000";
-const REQUEST_URL = `${PUPPETEER_BASE_URL}/document?message=Hello%20World`;
+const WEB_BASE_URL = process.env.WEB_BASE_URL || "http://localhost:3000";
+const REQUEST_URL = `${WEB_BASE_URL}/document?message=Hello%20World`;
 const UNKNOWN_ERROR_MESSAGE = "予期せぬエラーが発生しました";
 
 const errorResponse = (error: Error) => {
@@ -33,14 +32,11 @@ export const handler: Handler = async (_event, _context, callback) => {
           }
         : undefined,
   });
-  const server = createNuxtServer();
   const browser = await createBrowser();
 
   const generatePdf = generatePdfFactory(browser);
 
   try {
-    await server.listen();
-
     const pdfBuffers = await generatePdf(REQUEST_URL);
 
     await uploadResultFilesToS3(
@@ -71,6 +67,5 @@ export const handler: Handler = async (_event, _context, callback) => {
     callback(null, errorResponse(error));
   } finally {
     browser.close();
-    server.close();
   }
 };
