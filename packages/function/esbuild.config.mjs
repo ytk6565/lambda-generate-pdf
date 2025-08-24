@@ -9,6 +9,10 @@ const options = {
   outExtension: { ".js": ".mjs" },
   entryPoints: ["index.ts"],
   bundle: true,
+  banner: `
+    import { createRequire } from "module";
+    const require = createRequire(import.meta.url);
+  `,
   define: {
     "process.env.WEB_BASE_URL": JSON.stringify(process.env.WEB_BASE_URL),
   },
