@@ -7,7 +7,6 @@ const options = {
   target: "es2020",
   outdir: "dist",
   outExtension: { ".js": ".mjs" },
-  packages: "external",
   entryPoints: ["index.ts"],
   bundle: true,
   define: {
