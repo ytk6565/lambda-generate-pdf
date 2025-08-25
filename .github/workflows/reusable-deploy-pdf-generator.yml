@@ -88,7 +88,10 @@ jobs:
 
   app-build:
     needs: changes
-    # if: ${{ needs.changes.outputs.current-workflow == 'true' || needs.changes.outputs.global == 'true' || needs.changes.outputs.app == 'true' }}
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.global == 'true' ||
+      needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -124,7 +127,11 @@ jobs:
 
   function-build:
     needs: changes
-    # if: ${{ needs.changes.outputs.current-workflow == 'true' || needs.changes.outputs.global == 'true' || needs.changes.outputs.lambda-layers == 'true' || needs.changes.outputs.function == 'true' }}
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.global == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true' ||
+      needs.changes.outputs.function == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -171,7 +178,11 @@ jobs:
 
   node-modules-build:
     needs: changes
-    # if: ${{ needs.changes.outputs.current-workflow == 'true' || needs.changes.outputs.global == 'true' || needs.changes.outputs.lambda-layers == 'true' || needs.changes.outputs.function == 'true' }}
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.global == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true' ||
+      needs.changes.outputs.function == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -221,7 +232,10 @@ jobs:
 
   fonts-build:
     needs: changes
-    # if: ${{ needs.changes.outputs.current-workflow == 'true' || needs.changes.outputs.lambda-layers == 'true' || needs.changes.outputs.fonts == 'true' }}
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true' ||
+      needs.changes.outputs.fonts == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -255,7 +269,9 @@ jobs:
 
   chromium-build:
     needs: changes
-    # if: ${{ needs.changes.outputs.current-workflow == 'true' || needs.changes.outputs.lambda-layers == 'true' }}
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -298,7 +314,9 @@ jobs:
 
   pdfcpu-build:
     needs: changes
-    # if: ${{ needs.changes.outputs.current-workflow == 'true' || needs.changes.outputs.lambda-layers == 'true' }}
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
