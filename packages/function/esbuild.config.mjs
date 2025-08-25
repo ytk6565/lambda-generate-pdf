@@ -11,11 +11,11 @@ const options = {
   bundle: true,
   banner: {
     js: `
-      import { dirname as pathDirname } from 'node:path';
-      import { fileURLToPath } from 'node:url';
       import { createRequire as topLevelCreateRequire } from 'node:module';
+      import { fileURLToPath as urlFileURLToPath } from 'node:url';
+      import { dirname as pathDirname } from 'node:path';
       const require = topLevelCreateRequire(import.meta.url);
-      const __filename = fileURLToPath(import.meta.url);
+      const __filename = urlFileURLToPath(import.meta.url);
       const __dirname = pathDirname(__filename);
     `,
   },
