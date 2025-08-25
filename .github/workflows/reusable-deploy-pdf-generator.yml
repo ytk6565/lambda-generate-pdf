@@ -12,6 +12,9 @@ on:
       lambda_function_name:
         type: string
         required: true
+      lambda_layer_name_node_modules:
+        type: string
+        required: true
       lambda_layer_name_fonts:
         type: string
         required: true
@@ -166,6 +169,56 @@ jobs:
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
+  node-modules-build:
+    needs: changes
+    # if: ${{ needs.changes.outputs.current-workflow == 'true' || needs.changes.outputs.global == 'true' || needs.changes.outputs.lambda-layers == 'true' || needs.changes.outputs.function == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.13.0"
+          cache: "npm"
+
+      - name: "Install dependencies"
+        run: npm ci -w packages/function --omit=dev
+
+      - name: "Prepare node_modules"
+        run: |
+          mkdir -p ./packages/function/dependencies/nodejs
+          cp -r ./node_modules ./packages/function/dependencies/nodejs
+          rm -rf ./packages/function/dependencies/nodejs/node_modules/@ytk6565
+
+      - name: "Upload artifact for node_modules"
+        uses: actions/upload-artifact@v4
+        with:
+          name: generate-pdf-node-modules--${{ inputs.env }}
+          path: ./packages/function/dependencies
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
+  node-modules-publish:
+    uses: ./.github/workflows/reusable-publish-lambda-layer.yml
+    needs: node-modules-build
+    with:
+      artifact_name: "generate-pdf-node-modules--${{ inputs.env }}"
+      s3_bucket_name: ${{ inputs.s3_bucket_name }}
+      s3_file_path: "node_modules.zip"
+      lambda_layer_name: ${{ inputs.lambda_layer_name_node_modules }}
+      lambda_layer_description: "Node.js dependencies for Lambda function"
+    secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
   fonts-build:
     needs: changes
     # if: ${{ needs.changes.outputs.current-workflow == 'true' || needs.changes.outputs.lambda-layers == 'true' || needs.changes.outputs.fonts == 'true' }}
@@ -295,6 +348,7 @@ jobs:
     needs:
       [
         function-code-upload,
+        node-modules-publish,
         fonts-publish,
         chromium-build,
         pdfcpu-build,
@@ -302,6 +356,7 @@ jobs:
     if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     with:
       lambda_function_name: ${{ inputs.lambda_function_name }}
+      lambda_layer_name_node_modules: ${{ inputs.lambda_layer_name_node_modules }}
       lambda_layer_name_fonts: ${{ inputs.lambda_layer_name_fonts }}
       lambda_layer_name_chromium: ${{ inputs.lambda_layer_name_chromium }}
       lambda_layer_name_pdfcpu: ${{ inputs.lambda_layer_name_pdfcpu }}

@@ -25,6 +25,7 @@ jobs:
       app_s3_sync_to: "generate-pdf-renderer"
       app_cloudfront_distribution_id: "ERNG0CVCRKJOV"
       lambda_function_name: "generate-pdf"
+      lambda_layer_name_node_modules: "generate-pdf-node-modules"
       lambda_layer_name_fonts: "generate-pdf-fonts"
       lambda_layer_name_chromium: "generate-pdf-chromium"
       lambda_layer_name_pdfcpu: "generate-pdf-pdfcpu"

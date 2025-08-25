@@ -7,18 +7,9 @@ const options = {
   target: "es2020",
   outdir: "dist",
   outExtension: { ".js": ".mjs" },
+  packages: "external",
   entryPoints: ["index.ts"],
   bundle: true,
-  banner: {
-    js: `
-      import { createRequire as topLevelCreateRequire } from 'node:module';
-      import { fileURLToPath as urlFileURLToPath } from 'node:url';
-      import { dirname as pathDirname } from 'node:path';
-      const require = topLevelCreateRequire(import.meta.url);
-      const __filename = urlFileURLToPath(import.meta.url);
-      const __dirname = pathDirname(__filename);
-    `,
-  },
   define: {
     "process.env.WEB_BASE_URL": JSON.stringify(process.env.WEB_BASE_URL),
   },
