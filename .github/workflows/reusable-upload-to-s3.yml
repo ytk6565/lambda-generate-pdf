@@ -39,7 +39,7 @@ jobs:
       - name: "Get file basename"
         id: file_basename
         run: |
-          echo "BASENAME=$(basename ${{ inputs.s3_file_path }})" >> $GITHUB_OUTPUT
+          echo "BASENAME=$(basename ${{ inputs.s3_file_path }})" >> "$GITHUB_OUTPUT"
 
       - name: "Validate file basename"
         run: |

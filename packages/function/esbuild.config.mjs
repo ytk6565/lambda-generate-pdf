@@ -10,6 +10,9 @@ const options = {
   packages: "external",
   entryPoints: ["index.ts"],
   bundle: true,
+  define: {
+    "process.env.WEB_BASE_URL": JSON.stringify(process.env.WEB_BASE_URL),
+  },
   plugins: [
     {
       name: "external-output",

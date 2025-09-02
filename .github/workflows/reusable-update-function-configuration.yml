@@ -55,7 +55,7 @@ jobs:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
 
       - name: "Get Lambda Layer ARN suffix for node_modules"
-        id: function_layer_arn_suffix
+        id: node_modules_layer_arn_suffix
         uses: ./.github/actions/get-lambda-layer-arn-suffix
         with:
           AWS_LAMBDA_LAYER_NAME: ${{ inputs.lambda_layer_name_node_modules }}
@@ -71,8 +71,8 @@ jobs:
         uses: ./.github/actions/get-lambda-layer-arn-suffix
         with:
           AWS_LAMBDA_LAYER_NAME: ${{ inputs.lambda_layer_name_chromium }}
-          
-      - name: "Get Lambda Layer ARN suffix for Chromium"
+
+      - name: "Get Lambda Layer ARN suffix for pdfcpu"
         id: pdfcpu_layer_arn_suffix
         uses: ./.github/actions/get-lambda-layer-arn-suffix
         with:
@@ -102,7 +102,7 @@ jobs:
           aws lambda update-function-configuration \
           --function-name ${{ inputs.lambda_function_name }} \
           --layers \
-          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.function_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
+          ${{ env.LAYER_ARN_PREFIX }}:${{ steps.node_modules_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.fonts_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.chromium_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }} \
           ${{ env.LAYER_ARN_PREFIX }}:${{ steps.pdfcpu_layer_arn_suffix.outputs.LAYER_ARN_SUFFIX }}

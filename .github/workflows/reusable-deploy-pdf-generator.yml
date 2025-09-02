@@ -3,6 +3,12 @@ name: "Reusable deploy pdf generator workflow"
 on:
   workflow_call:
     inputs:
+      app_s3_sync_to:
+        type: string
+        required: true
+      app_cloudfront_distribution_id:
+        type: string
+        required: true
       lambda_function_name:
         type: string
         required: true
@@ -24,9 +30,6 @@ on:
       s3_file_path_function_code:
         type: string
         required: true
-      cloudfront_distribution_id:
-        type: string
-        required: true
       env:
         type: string
         required: true
@@ -34,6 +37,8 @@ on:
       AWS_ACCOUNT_ID:
         required: true
       CLOUDFRONT_URL:
+        required: true
+      WEB_BASE_URL:
         required: true
 
 permissions:
@@ -46,33 +51,87 @@ env:
   PDFCPU_VERSION: "0.9.1"
 
 jobs:
-  function-changes:
+  changes:
     runs-on: ubuntu-latest
     outputs:
-      exists: ${{ steps.filter.outputs.targets }}
+      global: ${{ steps.filter.outputs.global }}
+      current-workflow: ${{ steps.filter.outputs.current-workflow }}
+      lambda-layers: ${{ steps.filter.outputs.lambda-layers }}
+      app: ${{ steps.filter.outputs.app }}
+      function: ${{ steps.filter.outputs.function }}
+      fonts: ${{ steps.filter.outputs.fonts }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
 
-      - uses: dorny/paths-filter@v3
+      - uses: gylove1994/paths-filter@v2
         id: filter
         with:
           filters: |
-            targets:
+            current-workflow:
+              - ".github/workflows/reusable-deploy-pdf-generator.yml"
+            global:
               - ".node-version"
               - ".npmrc"
               - "package.json"
               - "package-lock.json"
+            app:
               - "packages/app/**"
+            function:
               - "packages/function/**"
+            lambda-layers:
               - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
-              - ".github/workflows/reusable-deploy-pdf-generator.yml"
               - ".github/workflows/reusable-publish-lambda-layer.yml"
               - ".github/workflows/reusable-update-function-configuration.yml"
+            fonts:
+              - "packages/function/fonts/**"
+
+  app-build:
+    needs: changes
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.global == 'true' ||
+      needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+  
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.13.0"
+          cache: "npm"
+
+      - name: "Install dependencies"
+        run: npm ci -w packages/app
+
+      - name: "Build app"
+        run: npm run generate -w packages/app
+
+      - name: "Sync S3"
+        run: |
+          aws s3 sync ./packages/app/.output/public s3://${{ inputs.app_s3_sync_to }} --exact-timestamps --delete
+        shell: bash
+  
+      - name: "Create CloudFront invalidation"
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ inputs.app_cloudfront_distribution_id }} --paths "/*"
+        shell: bash
 
   function-build:
-    needs: function-changes
-    if: ${{ needs.function-changes.outputs.exists == 'true' }}
+    needs: changes
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.global == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true' ||
+      needs.changes.outputs.function == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -87,40 +146,16 @@ jobs:
       - name: "Setup Node.js"
         uses: actions/setup-node@v4
         with:
-          node-version: "18.18.0"
+          node-version: "22.13.0"
           cache: "npm"
 
       - name: "Install dependencies"
-        run: npm ci
+        run: npm ci -w packages/function
 
-      - name: "Build app"
-        run: npm run build -w packages/app
-      
       - name: "Build function"
         run: npm run build -w packages/function
-
-      - name: "Install dependencies for deploy"
-        run: npm ci -w packages/function --only=prod
-
-      - name: "Prepare node_modules"
-        run: |
-          mkdir -p ./packages/function/dependencies/nodejs
-          cp -r ./node_modules ./packages/function/dependencies/nodejs
-          rm -rf ./packages/function/dependencies/nodejs/node_modules/@ytk6565
-
-      - name: "Upload artifact for node_modules"
-        uses: actions/upload-artifact@v4
-        with:
-          name: generate-pdf-node-modules--${{ inputs.env }}
-          path: ./packages/function/dependencies
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 1
-
-      - name: "Prepare function code"
-        run: |
-          mkdir -p packages/function/dist/.output
-          cp -r packages/app/.output/ packages/function/dist/
+        env:
+          WEB_BASE_URL: ${{ secrets.WEB_BASE_URL }}
 
       - name: "Upload artifact for function code"
         uses: actions/upload-artifact@v4
@@ -141,9 +176,51 @@ jobs:
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
+  node-modules-build:
+    needs: changes
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.global == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true' ||
+      needs.changes.outputs.function == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.13.0"
+          cache: "npm"
+
+      - name: "Install dependencies"
+        run: npm ci -w packages/function --omit=dev
+
+      - name: "Prepare node_modules"
+        run: |
+          mkdir -p ./packages/function/dependencies/nodejs
+          cp -r ./node_modules ./packages/function/dependencies/nodejs
+          rm -rf ./packages/function/dependencies/nodejs/node_modules/@ytk6565
+
+      - name: "Upload artifact for node_modules"
+        uses: actions/upload-artifact@v4
+        with:
+          name: generate-pdf-node-modules--${{ inputs.env }}
+          path: ./packages/function/dependencies
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
   node-modules-publish:
     uses: ./.github/workflows/reusable-publish-lambda-layer.yml
-    needs: function-build
+    needs: node-modules-build
     with:
       artifact_name: "generate-pdf-node-modules--${{ inputs.env }}"
       s3_bucket_name: ${{ inputs.s3_bucket_name }}
@@ -153,28 +230,12 @@ jobs:
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
-  fonts-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      exists: ${{ steps.filter.outputs.targets }}
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            targets:
-              - "packages/function/fonts/**"
-              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
-              - ".github/workflows/reusable-deploy-pdf-generator.yml"
-              - ".github/workflows/reusable-publish-lambda-layer.yml"
-              - ".github/workflows/reusable-update-function-configuration.yml"
-
   fonts-build:
-    needs: fonts-changes
-    if: ${{ needs.fonts-changes.outputs.exists == 'true' }}
+    needs: changes
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true' ||
+      needs.changes.outputs.fonts == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -206,26 +267,11 @@ jobs:
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
-  chromium-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      exists: ${{ steps.filter.outputs.targets }}
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            targets:
-              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
-              - ".github/workflows/reusable-deploy-pdf-generator.yml"
-              - ".github/workflows/reusable-update-function-configuration.yml"
-
   chromium-build:
-    needs: chromium-changes
-    if: ${{ needs.chromium-changes.outputs.exists == 'true' }}
+    needs: changes
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -245,7 +291,7 @@ jobs:
           else
             EXISTS="false"
           fi
-          echo "EXISTS=${EXISTS}" >> $GITHUB_OUTPUT
+          echo "EXISTS=${EXISTS}" >> "$GITHUB_OUTPUT"
 
       - name: "Fetch Chromium"
         if: steps.check_same_version.outputs.EXISTS == 'false'
@@ -266,26 +312,11 @@ jobs:
           --compatible-runtimes nodejs \
           --compatible-architectures x86_64
 
-  pdfcpu-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      exists: ${{ steps.filter.outputs.targets }}
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            targets:
-              - ".github/actions/get-lambda-layer-arn-suffix/action.yml"
-              - ".github/workflows/reusable-deploy-pdf-generator.yml"
-              - ".github/workflows/reusable-update-function-configuration.yml"
-
   pdfcpu-build:
-    needs: pdfcpu-changes
-    if: ${{ needs.pdfcpu-changes.outputs.exists == 'true' }}
+    needs: changes
+    if: |
+      needs.changes.outputs.current-workflow == 'true' ||
+      needs.changes.outputs.lambda-layers == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -305,7 +336,7 @@ jobs:
           else
             EXISTS="false"
           fi
-          echo "EXISTS=${EXISTS}" >> $GITHUB_OUTPUT
+          echo "EXISTS=${EXISTS}" >> "$GITHUB_OUTPUT"
 
       - name: "Fetch pdfcpu"
         if: steps.check_same_version.outputs.EXISTS == 'false'
@@ -327,6 +358,7 @@ jobs:
           --layer-name ${{ inputs.lambda_layer_name_pdfcpu }} \
           --description "pdfcpu v${{ env.PDFCPU_VERSION }}" \
           --content "S3Bucket=${{ inputs.s3_bucket_name }},S3Key=pdfcpuLayers/pdfcpu-v${{ env.PDFCPU_VERSION }}-layer.zip" \
+          --compatible-runtimes nodejs \
           --compatible-architectures x86_64
 
   call-update-function-configuration:
